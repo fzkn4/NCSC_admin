@@ -41,7 +41,7 @@ namespace NCSC
                 return;
             }
 
-            // 🔍 Check for existing users
+            // Check for existing users
             string existingUsers = await FirebaseHelper.GetDataAsync("accounts");
             if (!string.IsNullOrWhiteSpace(existingUsers) && existingUsers.Contains($"\"username\":\"{username}\""))
             {
@@ -51,14 +51,15 @@ namespace NCSC
 
             try
             {
-                // 🔐 Encrypt password before storing
+                // Encrypt password before storing
                 string encryptedPassword = EncryptionHelper.Encrypt(password);
 
                 var newUser = new
                 {
                     username = username,
                     password = encryptedPassword,
-                    created_at = DateTime.UtcNow.ToString("o")
+                    created_at = DateTime.UtcNow.ToString("o"),
+                    role = "admin"
                 };
 
                 await FirebaseHelper.PushDataAsync("accounts", newUser);
@@ -79,5 +80,6 @@ namespace NCSC
                 MessageBox.Show($"Error creating account: {ex.Message}");
             }
         }
+
     }
 }

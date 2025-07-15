@@ -43,5 +43,34 @@ namespace NCSC
             var json = await GetDataAsync(path);
             return JsonConvert.DeserializeObject<T>(json);
         }
+
+        public static async Task<string> PushSampleBeneficiaryAsync()
+        {
+            var rand = new Random();
+            int age = rand.Next(60, 100);
+            DateTime birthDate = DateTime.Now.AddYears(-age).AddDays(rand.Next(0, 365));
+            DateTime validatedDate = DateTime.Now.AddDays(-rand.Next(0, 365));
+
+            // List of valid provinces
+            string[] provinces = { "Zamboanga del Norte", "Zamboanga del Sur", "Zamboanga Sibugay", "Zamboanga City", "Isabela City" };
+            string randomProvince = provinces[rand.Next(provinces.Length)];
+
+            var sample = new Beneficiary
+            {
+                batch_code = $"BATCH-{rand.Next(1000, 9999)}",
+                age = age.ToString(),
+                birth_date = birthDate.ToShortDateString(),
+                sex = rand.Next(2) == 0 ? "Male" : "Female",
+                region = "Region IX",
+                province = randomProvince,
+                municipality = "Municipal 1",
+                barangay = "Barangay 1",
+                date_validated = validatedDate.ToShortDateString(),
+                pwd = rand.Next(2) == 0 ? "Yes" : "No",
+                ip = rand.Next(2) == 0 ? "Yes" : "No"
+            };
+
+            return await PushDataAsync("beneficiaries", sample);
+        }
     }
 }

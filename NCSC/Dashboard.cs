@@ -11,6 +11,7 @@ using Guna.Charts.Interfaces;
 using Guna.Charts.WinForms;
 using Guna.UI2.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using Guna.Charts.WinForms;
 
 namespace NCSC
 {
@@ -23,19 +24,27 @@ namespace NCSC
             InitializeComponent();
             sidebarButtons = new List<Guna2Button> { dashboardButton, beneficiariesButton, messageButton, graphReportButton, aboutButton };
             SelectSidebarButton(dashboardButton);
-
-            LoadRandomBeneficiariesData();
             UpdateBeneficiaryCounts();
-
             summaryGraph.MouseClick += SummaryGraph_MouseClick;
-
             randomizer();
         }
 
-
-        private void closeButton_Click(object sender, EventArgs e)
+        private async void Dashboard_Load(object sender, EventArgs e)
         {
-            Application.Exit();
+            await LoadBeneficiariesFromFirebase();
+            UpdateBeneficiaryCounts();
+            UpdateBirthdaySummaryGraph();
+            UpdateMilestoneBirthdayChartByMonth();
+
+            file_history_table.Rows.Clear(); // Clear existing rows if needed
+
+            file_history_table.Rows.Add("batch_zds_01.csv", "Zamboanga del Sur", "Pagadian City", "01/07/2025");
+            file_history_table.Rows.Add("batch_zc_02.csv", "Zamboanga City", "District 1", "03/07/2025");
+            file_history_table.Rows.Add("batch_zdn_03.csv", "Zamboanga del Norte", "Dipolog", "05/07/2025");
+            file_history_table.Rows.Add("batch_isabela_04.csv", "Isabela City", "Binuangan", "06/07/2025");
+            file_history_table.Rows.Add("batch_zs_05.csv", "Zamboanga Sibugay", "Imelda", "07/07/2025");
+            file_history_table.Rows.Add("batch_zc_06.csv", "Zamboanga City", "District 2", "08/07/2025");
+            file_history_table.Rows.Add("batch_zds_07.csv", "Zamboanga del Sur", "Dumingag", "09/07/2025");
         }
 
         private void logoutButton_Click(object sender, EventArgs e)
@@ -174,58 +183,6 @@ namespace NCSC
 
 
         // beneficiaries table
-        private void LoadRandomBeneficiariesData()
-        {
-            beneficiaries_table.Rows.Clear();
-            beneficiaries_table.Columns.Clear();
-
-            // Define columns
-            beneficiaries_table.Columns.Add("batch_code_col", "Batch Code");
-            beneficiaries_table.Columns.Add("age_col", "Age");
-            beneficiaries_table.Columns.Add("birth_date_col", "Birth Date");
-            beneficiaries_table.Columns.Add("sex_col", "Sex");
-            beneficiaries_table.Columns.Add("region_col", "Region");
-            beneficiaries_table.Columns.Add("province_col", "Province");
-            beneficiaries_table.Columns.Add("municipalities_col", "Municipality");
-            beneficiaries_table.Columns.Add("barangay_col", "Barangay");
-            beneficiaries_table.Columns.Add("date_validated_col", "Date Validated");
-            beneficiaries_table.Columns.Add("pwd_col", "PWD");
-            beneficiaries_table.Columns.Add("ip_col", "IP");
-
-            // Sample data
-            string[] regions = { "Zamboanga del Sur", "Zamboanga del Norte", "Zamboanga City", "Isabela City", "Zamboanga Sibugay" };
-            string[] provinces = { "Province A", "Province B", "Province C" };
-            string[] municipalities = { "Municipal 1", "Municipal 2", "Municipal 3" };
-            string[] barangays = { "Barangay 1", "Barangay 2", "Barangay 3" };
-            string[] sexes = { "Male", "Female" };
-
-            Random rand = new Random();
-
-            for (int i = 0; i < 50; i++) // 50 rows of fake data
-            {
-                int age = rand.Next(18, 90);
-                DateTime birthDate = DateTime.Now.AddYears(-age).AddDays(rand.Next(0, 365));
-                DateTime validatedDate = DateTime.Now.AddDays(-rand.Next(0, 365));
-
-                string batchCode = $"BATCH-{rand.Next(1000, 9999)}";
-
-                beneficiaries_table.Rows.Add(
-                    batchCode,
-                    age.ToString(),
-                    birthDate.ToShortDateString(),
-                    sexes[rand.Next(sexes.Length)],
-                    regions[rand.Next(regions.Length)],
-                    provinces[rand.Next(provinces.Length)],
-                    municipalities[rand.Next(municipalities.Length)],
-                    barangays[rand.Next(barangays.Length)],
-                    validatedDate.ToShortDateString(),
-                    rand.Next(0, 2) == 1 ? "Yes" : "No", // PWD
-                    rand.Next(0, 2) == 1 ? "Yes" : "No"  // IP
-                );
-            }
-        }
-
-
 
         // MESSAGE
         private void msg_immediately_checkbox_CheckedChanged(object sender, EventArgs e)
@@ -256,7 +213,7 @@ namespace NCSC
                 if (row.IsNewRow) continue;
 
                 string sex = row.Cells["sex_col"].Value?.ToString() ?? "";
-                string region = row.Cells["region_col"].Value?.ToString() ?? "";
+                string province = row.Cells["province_col"].Value?.ToString() ?? "";
                 string isPwd = row.Cells["pwd_col"].Value?.ToString() ?? "";
                 string isIp = row.Cells["ip_col"].Value?.ToString() ?? "";
 
@@ -266,7 +223,7 @@ namespace NCSC
                 if (isPwd == "Yes") pwd++;
                 if (isIp == "Yes") ip++;
 
-                switch (region)
+                switch (province)
                 {
                     case "Zamboanga del Sur":
                         zds++; break;
@@ -286,20 +243,16 @@ namespace NCSC
             zcCount.Text = zc.ToString();
             zdnCount.Text = zdn.ToString();
             isabelaCount.Text = isabela.ToString();
+            zsCount.Text = zs.ToString();
+
             maleCount.Text = male.ToString();
             femaleCount.Text = female.ToString();
             pwdCount.Text = pwd.ToString();
             ipCount.Text = ip.ToString();
-            zsCount.Text = zs.ToString();
 
-            int total =
-            zds + zc + zdn + isabela + zs +
-            male + female + pwd + ip;
-
-
+            int total = zds + zc + zdn + isabela + zs;
             totalCount.Text = total.ToString();
 
-            // Optional: update total beneficiaries count
             beneficiaries_total_count.Text = beneficiaries_table.Rows
                 .Cast<DataGridViewRow>()
                 .Where(r => !r.IsNewRow)
@@ -309,10 +262,214 @@ namespace NCSC
 
 
         // SHOWING BENEFICIARIES BDAY
+        private void UpdateBirthdaySummaryGraph()
+        {
+            // Prepare dictionary for counting birthdays by month
+            Dictionary<string, int> birthdayCounts = new Dictionary<string, int>();
+            for (int month = 1; month <= 12; month++)
+            {
+                string monthName = new DateTime(2000, month, 1).ToString("MMMM");
+                birthdayCounts[monthName] = 0;
+            }
+
+            // Count birthdays per month from table
+            foreach (DataGridViewRow row in beneficiaries_table.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
+                if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                {
+                    string monthName = birthDate.ToString("MMMM");
+                    if (birthdayCounts.ContainsKey(monthName))
+                        birthdayCounts[monthName]++;
+                }
+            }
+
+            // Sort dictionary by month number (Jan to Dec)
+            var sortedMonthCounts = birthdayCounts.OrderBy(m => DateTime.ParseExact(m.Key, "MMMM", null).Month);
+
+            // Clear old chart data
+            summary_graph_bday.DataPoints.Clear();
+            summaryGraph.Datasets.Clear();
+
+            // Add values to the chart (all integers)
+            foreach (var entry in sortedMonthCounts)
+            {
+                summary_graph_bday.DataPoints.Add(new Guna.Charts.WinForms.LPoint(entry.Key, entry.Value));
+            }
+
+            summaryGraph.Datasets.Add(summary_graph_bday);
+            summaryGraph.Update();
+        }
+
+
+        private void UpdateMilestoneBirthdayChartByMonth()
+        {
+            // Clear datasets
+            budgetChart.Datasets.Clear();
+            bday80.DataPoints.Clear();
+            bday85.DataPoints.Clear();
+            bday90.DataPoints.Clear();
+            bday100.DataPoints.Clear();
+
+            // Prepare 12-month counters for each milestone
+            int[] count80 = new int[12];
+            int[] count85 = new int[12];
+            int[] count90 = new int[12];
+            int[] count100 = new int[12];
+
+            int currentYear = DateTime.Now.Year;
+
+            foreach (DataGridViewRow row in beneficiaries_table.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                string birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
+
+                if (DateTime.TryParseExact(birthDateStr, "dd/MM/yyyy",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out DateTime birthDate))
+                {
+                    int birthYear = birthDate.Year;
+                    int birthMonth = birthDate.Month;
+
+                    // Determine the age the person will turn THIS YEAR
+                    int turningThisYear = currentYear - birthYear;
+
+                    switch (turningThisYear)
+                    {
+                        case 80:
+                            count80[birthMonth - 1]++;
+                            break;
+                        case 85:
+                            count85[birthMonth - 1]++;
+                            break;
+                        case 90:
+                            count90[birthMonth - 1]++;
+                            break;
+                        case 100:
+                            count100[birthMonth - 1]++;
+                            break;
+                    }
+                }
+            }
+
+            // Add month-wise data points
+            for (int i = 0; i < 12; i++)
+            {
+                string monthName = new DateTime(currentYear, i + 1, 1).ToString("MMMM");
+
+                bday80.DataPoints.Add(monthName, count80[i]);
+                bday85.DataPoints.Add(monthName, count85[i]);
+                bday90.DataPoints.Add(monthName, count90[i]);
+                bday100.DataPoints.Add(monthName, count100[i]);
+            }
+
+            // Add all datasets to the chart
+            budgetChart.Datasets.Add(bday80);
+            budgetChart.Datasets.Add(bday85);
+            budgetChart.Datasets.Add(bday90);
+            budgetChart.Datasets.Add(bday100);
+
+            budgetChart.Update();
+        }
+
+
+
 
 
         private void SummaryGraph_MouseClick(object sender, MouseEventArgs e)
         {
+        }
+
+        private void graphReportPanel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private async void accounts_button_Click(object sender, EventArgs e)
+        {
+            //try
+            //{
+            //    await FirebaseHelper.PushSampleBeneficiaryAsync();
+            //    MessageBox.Show("Sample beneficiary data pushed successfully.");
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"Failed to push sample data: {ex.Message}");
+            //}
+        }
+
+        private async Task LoadBeneficiariesFromFirebase()
+        {
+            beneficiaries_table.Rows.Clear();
+            beneficiaries_table.Columns.Clear();
+
+            // Define columns
+            beneficiaries_table.Columns.Add("batch_code_col", "Batch Code");
+            beneficiaries_table.Columns.Add("age_col", "Age");
+            beneficiaries_table.Columns.Add("birth_date_col", "Birth Date");
+            beneficiaries_table.Columns.Add("sex_col", "Sex");
+            beneficiaries_table.Columns.Add("region_col", "Region");
+            beneficiaries_table.Columns.Add("province_col", "Province");
+            beneficiaries_table.Columns.Add("municipalities_col", "Municipality");
+            beneficiaries_table.Columns.Add("barangay_col", "Barangay");
+            beneficiaries_table.Columns.Add("date_validated_col", "Date Validated");
+            beneficiaries_table.Columns.Add("pwd_col", "PWD");
+            beneficiaries_table.Columns.Add("ip_col", "IP");
+
+            var beneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
+
+            if (beneficiaries != null)
+            {
+                foreach (var entry in beneficiaries.Values)
+                {
+                    beneficiaries_table.Rows.Add(
+                        entry.batch_code,
+                        entry.age,
+                        entry.birth_date,
+                        entry.sex,
+                        entry.region,
+                        entry.province,
+                        entry.municipality,
+                        entry.barangay,
+                        entry.date_validated,
+                        entry.pwd,
+                        entry.ip
+                    );
+                }
+            }
+
+            UpdateBeneficiaryCounts();
+        }
+
+        private void upload_file_button_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "Select a file to upload";
+                openFileDialog.Filter = "Excel Files|*.xls;*.xlsx|CSV Files|*.csv|All Files|*.*";
+                openFileDialog.Multiselect = false;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedFilePath = openFileDialog.FileName;
+                    string fileName = Path.GetFileName(selectedFilePath);
+
+                    // Example: display file details in your guna DataGridView (file_history_table)
+                    string province = "Zamboanga del Sur"; // Replace with actual logic if needed
+                    string municipality = "Municipal 1";   // Replace with actual logic if needed
+                    string dateSubmission = DateTime.Now.ToString("dd/MM/yyyy");
+
+                    file_history_table.Rows.Add(fileName, province, municipality, dateSubmission);
+
+                    MessageBox.Show("File uploaded successfully:\n" + fileName, "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // You can optionally store it or process the file here
+                    // e.g., read Excel/CSV content, upload to database, etc.
+                }
+            }
         }
 
     }
