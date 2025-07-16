@@ -24,10 +24,10 @@ C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windo
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.AssemblyInfoInputs.cache
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.AssemblyInfo.cs
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.csproj.CoreCompileInputs.cache
+C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.sourcelink.json
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.csproj.Up2Date
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.dll
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\refint\NCSC.dll
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.pdb
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.genruntimeconfig.cache
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\ref\NCSC.dll
-C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.sourcelink.json
