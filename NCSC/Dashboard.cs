@@ -35,6 +35,7 @@ namespace NCSC
             UpdateBeneficiaryCounts();
             UpdateBirthdaySummaryGraph();
             UpdateMilestoneBirthdayChartByMonth();
+            await LoadProvincialAccountsAsync();
 
             file_history_table.Rows.Clear(); // Clear existing rows if needed
 
@@ -56,24 +57,26 @@ namespace NCSC
 
         private void SelectSidebarButton(Guna.UI2.WinForms.Guna2Button selectedButton)
         {
-            // List of buttons
+            // List of buttons — add accountsButton at the end (or wherever it fits logically)
             var buttons = new List<Guna.UI2.WinForms.Guna2Button>
         {
             dashboardButton,
             beneficiariesButton,
             messageButton,
             graphReportButton,
-            aboutButton
+            aboutButton,
+            accounts_button
         };
 
-            // Corresponding panels — MUST be in the same order as buttons
+            // Corresponding panels — must match the order above
             var panels = new List<Panel>
         {
             dashboardPanel,
             beneficiariesPanel,
             messagePanel,
             graphReportPanel,
-            aboutPanel
+            aboutPanel,
+            manage_accounts_panel
         };
 
             for (int i = 0; i < buttons.Count; i++)
@@ -88,6 +91,7 @@ namespace NCSC
                 panels[i].Visible = isSelected;
             }
         }
+
 
 
         private void dashboardButton_Click(object sender, EventArgs e)
@@ -390,15 +394,7 @@ namespace NCSC
 
         private async void accounts_button_Click(object sender, EventArgs e)
         {
-            //try
-            //{
-            //    await FirebaseHelper.PushSampleBeneficiaryAsync();
-            //    MessageBox.Show("Sample beneficiary data pushed successfully.");
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"Failed to push sample data: {ex.Message}");
-            //}
+            SelectSidebarButton(accounts_button);
         }
 
         private async Task LoadBeneficiariesFromFirebase()
@@ -469,6 +465,94 @@ namespace NCSC
                     // You can optionally store it or process the file here
                     // e.g., read Excel/CSV content, upload to database, etc.
                 }
+            }
+        }
+
+        private void manage_accounts_panel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private async Task LoadProvincialAccountsAsync()
+        {
+            try
+            {
+                var accounts = await FirebaseHelper.GetDataAsync<Dictionary<string, ProvincialAccounts>>("provincial_accounts");
+
+                if (accounts == null)
+                {
+                    MessageBox.Show("No accounts found.");
+                    return;
+                }
+
+                accounts_table.Rows.Clear();
+
+                foreach (var account in accounts)
+                {
+                    string id = account.Key;
+                    var acc = account.Value;
+
+                    if (acc != null)
+                    {
+                        accounts_table.Rows.Add(
+                            id,
+                            acc.username ?? "N/A",
+                            acc.province ?? "N/A",
+                            acc.municipality ?? "N/A",
+                            acc.status ?? "N/A"
+                        );
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading accounts: " + ex.Message);
+            }
+        }
+
+        private async void approve_button_Click(object sender, EventArgs e)
+        {
+            if (accounts_table.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select an account to approve.");
+                return;
+            }
+
+            // Get selected row
+            var selectedRow = accounts_table.SelectedRows[0];
+            string accountId = selectedRow.Cells["account_id"].Value?.ToString();
+
+            if (string.IsNullOrEmpty(accountId))
+            {
+                MessageBox.Show("Invalid account ID.");
+                return;
+            }
+
+            try
+            {
+                // Fetch the existing account data
+                var account = await FirebaseHelper.GetDataAsync<ProvincialAccounts>($"provincial_accounts/{accountId}");
+
+                if (account == null)
+                {
+                    MessageBox.Show("Account not found.");
+                    return;
+                }
+
+                // Update the status
+                account.status = "approved";
+
+                // Push updated data back to Firebase
+                await FirebaseHelper.SetDataAsync($"provincial_accounts/{accountId}", account);
+
+                MessageBox.Show("Account approved successfully!");
+
+                // Refresh the table
+                await LoadProvincialAccountsAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error approving account: " + ex.Message);
             }
         }
 
