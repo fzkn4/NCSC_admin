@@ -25,8 +25,26 @@ namespace NCSC
             sidebarButtons = new List<Guna2Button> { dashboardButton, beneficiariesButton, messageButton, graphReportButton, aboutButton };
             SelectSidebarButton(dashboardButton);
             UpdateBeneficiaryCounts();
-            summaryGraph.MouseClick += SummaryGraph_MouseClick;
+            guna2Panel13.MouseClick += SummaryGraph_MouseClick;
             randomizer();
+
+            // Populate province filter with 'All' + provinces
+            beneficiaries_province_filter.Items.Clear();
+            beneficiaries_province_filter.Items.Add("All");
+            foreach (var province in provinceMunicipalities.Keys)
+            {
+                beneficiaries_province_filter.Items.Add(province);
+            }
+            beneficiaries_province_filter.SelectedIndex = 0;
+
+            // Set up event handlers
+            beneficiaries_province_filter.SelectedIndexChanged += beneficiaries_province_filter_SelectedIndexChanged;
+            beneficiaries_municipality_filter.SelectedIndexChanged += beneficiaries_municipality_filter_SelectedIndexChanged;
+
+            // Populate municipality filter with 'All' by default
+            beneficiaries_municipality_filter.Items.Clear();
+            beneficiaries_municipality_filter.Items.Add("All");
+            beneficiaries_municipality_filter.SelectedIndex = 0;
         }
 
         private async void Dashboard_Load(object sender, EventArgs e)
@@ -315,12 +333,14 @@ namespace NCSC
             bday80.DataPoints.Clear();
             bday85.DataPoints.Clear();
             bday90.DataPoints.Clear();
+            bday95.DataPoints.Clear();
             bday100.DataPoints.Clear();
 
             // Prepare 12-month counters for each milestone
             int[] count80 = new int[12];
             int[] count85 = new int[12];
             int[] count90 = new int[12];
+            int[] count95 = new int[12];
             int[] count100 = new int[12];
 
             int currentYear = DateTime.Now.Year;
@@ -352,6 +372,9 @@ namespace NCSC
                         case 90:
                             count90[birthMonth - 1]++;
                             break;
+                        case 95:
+                            count95[birthMonth - 1]++;
+                            break;
                         case 100:
                             count100[birthMonth - 1]++;
                             break;
@@ -367,6 +390,7 @@ namespace NCSC
                 bday80.DataPoints.Add(monthName, count80[i]);
                 bday85.DataPoints.Add(monthName, count85[i]);
                 bday90.DataPoints.Add(monthName, count90[i]);
+                bday95.DataPoints.Add(monthName, count95[i]);
                 bday100.DataPoints.Add(monthName, count100[i]);
             }
 
@@ -374,6 +398,7 @@ namespace NCSC
             budgetChart.Datasets.Add(bday80);
             budgetChart.Datasets.Add(bday85);
             budgetChart.Datasets.Add(bday90);
+            budgetChart.Datasets.Add(bday95);
             budgetChart.Datasets.Add(bday100);
 
             budgetChart.Update();
@@ -385,6 +410,113 @@ namespace NCSC
 
         private void SummaryGraph_MouseClick(object sender, MouseEventArgs e)
         {
+            MessageBox.Show("Panel click!", "Debug");
+            if (summaryGraph.Datasets.Count == 0)
+                return;
+
+            var dataset = summaryGraph.Datasets[0] as GunaLineDataset;
+            if (dataset == null || dataset.DataPoints.Count == 0)
+            {
+                MessageBox.Show("Dataset is not a GunaLineDataset or is empty.");
+                return;
+            }
+
+            int pointCount = dataset.DataPoints.Count;
+
+            // Estimate plotting area (THESE ARE THE VALUES TO TWEAK)
+            int leftMargin = 50;
+            int rightMargin = 20; // Y-axis labels might take up less space
+            int plotWidth = summaryGraph.Width - leftMargin - rightMargin;
+
+            if (plotWidth <= 0) return; // Avoid division by zero if chart is too small
+
+            // For a single point, the spacing is not relevant, it's at the start.
+            float pointSpacing = (pointCount > 1) ? (float)plotWidth / (pointCount - 1) : 0;
+
+            int clickedIndex = -1;
+            float minDist = float.MaxValue;
+
+            // For debugging, let's build a string
+            StringBuilder debugInfo = new StringBuilder();
+            debugInfo.AppendLine($"Click X: {e.X}");
+            debugInfo.AppendLine($"Plot Width: {plotWidth}, Point Spacing: {pointSpacing:F2}");
+
+            for (int i = 0; i < pointCount; i++)
+            {
+                float pointX = leftMargin + (i * pointSpacing);
+                float dist = Math.Abs(e.X - pointX);
+
+                debugInfo.AppendLine($"Point {i} ({dataset.DataPoints[i].Label}): Calculated X = {pointX:F2}, Dist = {dist:F2}");
+
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    clickedIndex = i;
+                }
+            }
+
+            debugInfo.AppendLine($"\nClosest point is index {clickedIndex} ({dataset.DataPoints[clickedIndex].Label}) with distance {minDist:F2}.");
+
+            // You can comment this out once it's working
+            //MessageBox.Show(debugInfo.ToString(), "Chart Click Debug");
+
+            // Increase sensitivity: check if the click is within half the spacing distance, or a fixed threshold for a single point
+            bool isClickValid = (pointCount > 1 && minDist < (pointSpacing / 2)) || (pointCount == 1 && minDist < 20);
+
+            if (clickedIndex != -1 && isClickValid)
+            {
+                var month = dataset.DataPoints[clickedIndex].Label;
+
+                // Filter and show popup as before
+                var rows = beneficiaries_table.Rows
+                    .Cast<DataGridViewRow>()
+                    .Where(r => !r.IsNewRow)
+                    .Where(r =>
+                    {
+                        var birthDateStr = r.Cells["birth_date_col"].Value?.ToString();
+                        if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                        {
+                            return birthDate.ToString("MMMM") == month;
+                        }
+                        return false;
+                    })
+                    .ToList();
+
+                ShowBeneficiariesForMonth(month, rows);
+            }
+        }
+
+        private void ShowBeneficiariesForMonth(string month, List<DataGridViewRow> rows)
+        {
+            Form popup = new Form();
+            popup.Text = $"Birthdays in {month}";
+            popup.Size = new Size(900, 400);
+
+            DataGridView dgv = new DataGridView();
+            dgv.Dock = DockStyle.Fill;
+            dgv.AutoGenerateColumns = false;
+            dgv.AllowUserToAddRows = false;
+            dgv.ReadOnly = true;
+
+            // Copy columns from beneficiaries_table
+            foreach (DataGridViewColumn col in beneficiaries_table.Columns)
+            {
+                dgv.Columns.Add((DataGridViewColumn)col.Clone());
+            }
+
+            // Add rows
+            foreach (var row in rows)
+            {
+                int idx = dgv.Rows.Add();
+                for (int i = 0; i < row.Cells.Count; i++)
+                {
+                    dgv.Rows[idx].Cells[i].Value = row.Cells[i].Value;
+                }
+            }
+
+            popup.Controls.Add(dgv);
+            popup.StartPosition = FormStartPosition.CenterParent;
+            popup.ShowDialog();
         }
 
         private void graphReportPanel_Paint(object sender, PaintEventArgs e)
@@ -396,6 +528,9 @@ namespace NCSC
         {
             SelectSidebarButton(accounts_button);
         }
+
+        // Store all beneficiaries for filtering
+        private List<Beneficiary> allBeneficiaries = new List<Beneficiary>();
 
         private async Task LoadBeneficiariesFromFirebase()
         {
@@ -417,27 +552,51 @@ namespace NCSC
 
             var beneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
 
+            allBeneficiaries.Clear();
             if (beneficiaries != null)
             {
                 foreach (var entry in beneficiaries.Values)
                 {
-                    beneficiaries_table.Rows.Add(
-                        entry.batch_code,
-                        entry.age,
-                        entry.birth_date,
-                        entry.sex,
-                        entry.region,
-                        entry.province,
-                        entry.municipality,
-                        entry.barangay,
-                        entry.date_validated,
-                        entry.pwd,
-                        entry.ip
-                    );
+                    allBeneficiaries.Add(entry);
                 }
             }
 
+            ApplyBeneficiaryFilters();
             UpdateBeneficiaryCounts();
+        }
+
+        private void ApplyBeneficiaryFilters()
+        {
+            beneficiaries_table.Rows.Clear();
+            string selectedProvince = beneficiaries_province_filter.SelectedItem?.ToString();
+            string selectedMunicipality = beneficiaries_municipality_filter.SelectedItem?.ToString();
+
+            var filtered = allBeneficiaries.AsEnumerable();
+            if (!string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All" && provinceMunicipalities.ContainsKey(selectedProvince))
+            {
+                filtered = filtered.Where(b => b.province == selectedProvince);
+            }
+            if (!string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality")
+            {
+                filtered = filtered.Where(b => b.municipality == selectedMunicipality);
+            }
+
+            foreach (var entry in filtered)
+            {
+                beneficiaries_table.Rows.Add(
+                    entry.batch_code,
+                    entry.age,
+                    entry.birth_date,
+                    entry.sex,
+                    entry.region,
+                    entry.province,
+                    entry.municipality,
+                    entry.barangay,
+                    entry.date_validated,
+                    entry.pwd,
+                    entry.ip
+                );
+            }
         }
 
         private void upload_file_button_Click(object sender, EventArgs e)
@@ -556,5 +715,82 @@ namespace NCSC
             }
         }
 
+        // Province to Municipalities mapping
+        private readonly Dictionary<string, List<string>> provinceMunicipalities = new Dictionary<string, List<string>>
+        {
+            { "Zamboanga del Sur", new List<string> { "Aurora", "Bayog", "Dimataling", "Dinas", "Dumalinao", "Dumingag", "Guipos", "Josefina", "Kumalarang", "Labangan", "Lakewood", "Lapuyan", "Mahayag", "Margosatubig", "Midsalip", "Molave", "Pagadian City", "Pitogo", "Ramon Magsaysay", "San Miguel", "San Pablo", "Sominot", "Tabina", "Tambulig", "Tigbao", "Tukuran", "Vincenzo A. Sagun" } },
+            { "Zamboanga del Norte", new List<string> { "Baliguian", "Godod", "Gutalac", "Jose Dalman", "Kalawit", "Katipunan", "La Libertad", "Labason", "Leon B. Postigo", "Liloy", "Manukan", "Mutia", "Piñan", "Polanco", "President Manuel A. Roxas", "Rizal", "Salug", "Sergio Osmeña Sr.", "Siayan", "Sibuco", "Sibutad", "Sindangan", "Siocon", "Sirawai", "Tampilisan", "Dipolog City", "Dapitan City" } },
+            { "Zamboanga Sibugay", new List<string> { "Alicia", "Buug", "Diplahan", "Imelda", "Ipil (capital)", "Kabasalan", "Mabuhay", "Malangas", "Naga", "Olutanga", "Payao", "Roseller Lim", "Siay", "Talusan", "Titay", "Tungawan" } },
+            { "Zamboanga City", new List<string> { "Zamboanga City" } },
+            { "Isabela City", new List<string> { "Isabela City" } }
+        };
+
+        // Update filter when province or municipality changes
+        private void beneficiaries_province_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            beneficiaries_municipality_filter.Items.Clear();
+            string selectedProvince = beneficiaries_province_filter.SelectedItem?.ToString();
+            if (!string.IsNullOrEmpty(selectedProvince) && provinceMunicipalities.ContainsKey(selectedProvince))
+            {
+                // For Zamboanga City and Isabela City, only show the city
+                if (selectedProvince == "Zamboanga City" || selectedProvince == "Isabela City")
+                {
+                    beneficiaries_municipality_filter.Items.Add(provinceMunicipalities[selectedProvince][0]);
+                    beneficiaries_municipality_filter.SelectedIndex = 0;
+                }
+                else
+                {
+                    beneficiaries_municipality_filter.Items.Add("All");
+                    beneficiaries_municipality_filter.Items.AddRange(provinceMunicipalities[selectedProvince].ToArray());
+                    beneficiaries_municipality_filter.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                // If 'All' or invalid, show 'All' only
+                beneficiaries_municipality_filter.Items.Add("All");
+                beneficiaries_municipality_filter.SelectedIndex = 0;
+            }
+            ApplyBeneficiaryFilters();
+        }
+
+        private void beneficiaries_municipality_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ApplyBeneficiaryFilters();
+        }
+
+        private void beneficiaries_table_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            var row = beneficiaries_table.Rows[e.RowIndex];
+            if (row.IsNewRow) return;
+
+            var popup = new Benefeciaries_popup();
+
+            // Set text fields
+            popup.Controls["benefeciaries_batch_code"].Text = row.Cells["batch_code_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_region"].Text = row.Cells["region_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_age"].Text = row.Cells["age_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_province"].Text = row.Cells["province_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_municipality"].Text = row.Cells["municipalities_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_sex"].Text = row.Cells["sex_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_barangay"].Text = row.Cells["barangay_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_pwd"].Text = row.Cells["pwd_col"].Value?.ToString() ?? "";
+            popup.Controls["benefeciaries_ip"].Text = row.Cells["ip_col"].Value?.ToString() ?? "";
+
+            // Set birthdate
+            var birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
+            if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                ((Guna.UI2.WinForms.Guna2DateTimePicker)popup.Controls["benefeciaries_birthdate"]).Value = birthDate;
+
+            // Set date validated
+            var dateValidatedStr = row.Cells["date_validated_col"].Value?.ToString();
+            if (DateTime.TryParse(dateValidatedStr, out DateTime dateValidated))
+                ((Guna.UI2.WinForms.Guna2DateTimePicker)popup.Controls["benefeciaries_date_validated"]).Value = dateValidated;
+
+            // Date registered is not in the table, so leave as default
+
+            popup.ShowDialog();
+        }
     }
 }

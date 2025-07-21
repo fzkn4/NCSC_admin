@@ -1,5 +1,4 @@
-﻿
-namespace NCSC
+﻿namespace NCSC
 {
     partial class Dashboard
     {
@@ -392,6 +391,7 @@ namespace NCSC
             account_province = new DataGridViewTextBoxColumn();
             accounts_municipality = new DataGridViewTextBoxColumn();
             account_status = new DataGridViewTextBoxColumn();
+            bday95 = new Guna.Charts.WinForms.GunaLineDataset();
             guna2Panel1.SuspendLayout();
             dashboardPanel.SuspendLayout();
             guna2Panel14.SuspendLayout();
@@ -680,7 +680,7 @@ namespace NCSC
             label32.Name = "label32";
             label32.Size = new Size(258, 28);
             label32.TabIndex = 13;
-            label32.Text = " ₱ 0";
+            label32.Text = "₱ 0";
             label32.TextAlign = ContentAlignment.MiddleRight;
             // 
             // label33
@@ -714,7 +714,7 @@ namespace NCSC
             label30.Name = "label30";
             label30.Size = new Size(258, 28);
             label30.TabIndex = 13;
-            label30.Text = " ₱ 10,000";
+            label30.Text = "₱ 10,000";
             label30.TextAlign = ContentAlignment.MiddleRight;
             // 
             // label31
@@ -748,7 +748,7 @@ namespace NCSC
             label28.Name = "label28";
             label28.Size = new Size(258, 28);
             label28.TabIndex = 13;
-            label28.Text = " ₱ 40,000";
+            label28.Text = "₱ 40,000";
             label28.TextAlign = ContentAlignment.MiddleRight;
             // 
             // label29
@@ -782,7 +782,7 @@ namespace NCSC
             label26.Name = "label26";
             label26.Size = new Size(258, 28);
             label26.TabIndex = 13;
-            label26.Text = " ₱ 70,000";
+            label26.Text = "₱ 70,000";
             label26.TextAlign = ContentAlignment.MiddleRight;
             // 
             // label27
@@ -816,7 +816,7 @@ namespace NCSC
             label25.Name = "label25";
             label25.Size = new Size(258, 28);
             label25.TabIndex = 13;
-            label25.Text = " ₱ 100,000";
+            label25.Text = "₱ 100,000";
             label25.TextAlign = ContentAlignment.MiddleRight;
             // 
             // label24
@@ -840,12 +840,12 @@ namespace NCSC
             label23.Name = "label23";
             label23.Size = new Size(239, 51);
             label23.TabIndex = 11;
-            label23.Text = " ₱ 620,000";
+            label23.Text = "₱ 620,000";
             label23.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // budgetChart
             // 
-            budgetChart.Datasets.AddRange(new Guna.Charts.Interfaces.IGunaDataset[] { bday80, bday85, bday90, bday100 });
+            budgetChart.Datasets.AddRange(new Guna.Charts.Interfaces.IGunaDataset[] { bday80, bday85, bday90, bday95, bday100 });
             chartFont17.FontName = "Arial";
             budgetChart.Legend.LabelFont = chartFont17;
             budgetChart.Location = new Point(11, 13);
@@ -1830,7 +1830,7 @@ namespace NCSC
             beneficiariesPanel.Controls.Add(guna2Panel20);
             beneficiariesPanel.Controls.Add(guna2Panel21);
             beneficiariesPanel.CustomizableEdges = customizableEdges39;
-            beneficiariesPanel.Location = new Point(192, 8);
+            beneficiariesPanel.Location = new Point(1700, 116);
             beneficiariesPanel.Name = "beneficiariesPanel";
             beneficiariesPanel.ShadowDecoration.CustomizableEdges = customizableEdges40;
             beneficiariesPanel.Size = new Size(1481, 952);
@@ -1966,6 +1966,9 @@ namespace NCSC
             // 
             // beneficiaries_table
             // 
+            beneficiaries_table.AllowUserToAddRows = false;
+            beneficiaries_table.AllowUserToDeleteRows = false;
+            beneficiaries_table.AllowUserToResizeColumns = false;
             beneficiaries_table.AllowUserToResizeRows = false;
             dataGridViewCellStyle9.BackColor = Color.White;
             dataGridViewCellStyle9.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -1994,6 +1997,7 @@ namespace NCSC
             beneficiaries_table.GridColor = Color.FromArgb(231, 229, 255);
             beneficiaries_table.Location = new Point(11, 17);
             beneficiaries_table.Name = "beneficiaries_table";
+            beneficiaries_table.ReadOnly = true;
             beneficiaries_table.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle12.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle12.BackColor = Color.White;
@@ -2019,7 +2023,7 @@ namespace NCSC
             beneficiaries_table.ThemeStyle.HeaderStyle.ForeColor = Color.White;
             beneficiaries_table.ThemeStyle.HeaderStyle.HeaightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             beneficiaries_table.ThemeStyle.HeaderStyle.Height = 32;
-            beneficiaries_table.ThemeStyle.ReadOnly = false;
+            beneficiaries_table.ThemeStyle.ReadOnly = true;
             beneficiaries_table.ThemeStyle.RowsStyle.BackColor = Color.White;
             beneficiaries_table.ThemeStyle.RowsStyle.BorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             beneficiaries_table.ThemeStyle.RowsStyle.Font = new Font("Segoe UI", 9F);
@@ -2027,61 +2031,73 @@ namespace NCSC
             beneficiaries_table.ThemeStyle.RowsStyle.Height = 25;
             beneficiaries_table.ThemeStyle.RowsStyle.SelectionBackColor = Color.FromArgb(231, 229, 255);
             beneficiaries_table.ThemeStyle.RowsStyle.SelectionForeColor = Color.FromArgb(71, 69, 94);
+            beneficiaries_table.CellDoubleClick += beneficiaries_table_CellDoubleClick;
             // 
             // batch_code_col
             // 
             batch_code_col.HeaderText = "Batch Code";
             batch_code_col.Name = "batch_code_col";
+            batch_code_col.ReadOnly = true;
             // 
             // age_col
             // 
             age_col.HeaderText = "Age";
             age_col.Name = "age_col";
+            age_col.ReadOnly = true;
             // 
             // birth_date_col
             // 
             birth_date_col.HeaderText = "Birthdate";
             birth_date_col.Name = "birth_date_col";
+            birth_date_col.ReadOnly = true;
             // 
             // sex_col
             // 
             sex_col.HeaderText = "Sex";
             sex_col.Name = "sex_col";
+            sex_col.ReadOnly = true;
             // 
             // region_col
             // 
             region_col.HeaderText = "Region";
             region_col.Name = "region_col";
+            region_col.ReadOnly = true;
             // 
             // province_col
             // 
             province_col.HeaderText = "Province";
             province_col.Name = "province_col";
+            province_col.ReadOnly = true;
             // 
             // minicipalities_col
             // 
             minicipalities_col.HeaderText = "Municipalities";
             minicipalities_col.Name = "minicipalities_col";
+            minicipalities_col.ReadOnly = true;
             // 
             // barangay_col
             // 
             barangay_col.HeaderText = "Barangay";
             barangay_col.Name = "barangay_col";
+            barangay_col.ReadOnly = true;
             // 
             // date_validated_col
             // 
             date_validated_col.HeaderText = "Date Validated";
             date_validated_col.Name = "date_validated_col";
+            date_validated_col.ReadOnly = true;
             // 
             // pwd_col
             // 
             pwd_col.HeaderText = "PWD";
             pwd_col.Name = "pwd_col";
+            pwd_col.ReadOnly = true;
             // 
             // ip_col
             // 
             ip_col.HeaderText = "IP";
             ip_col.Name = "ip_col";
+            ip_col.ReadOnly = true;
             // 
             // graphReportPanel
             // 
@@ -2090,7 +2106,7 @@ namespace NCSC
             graphReportPanel.Controls.Add(guna2Panel26);
             graphReportPanel.Controls.Add(guna2Panel25);
             graphReportPanel.CustomizableEdges = customizableEdges27;
-            graphReportPanel.Location = new Point(192, 8);
+            graphReportPanel.Location = new Point(1727, 47);
             graphReportPanel.Name = "graphReportPanel";
             graphReportPanel.ShadowDecoration.CustomizableEdges = customizableEdges28;
             graphReportPanel.Size = new Size(1481, 959);
@@ -2532,7 +2548,7 @@ namespace NCSC
             aboutPanel.Controls.Add(label7);
             aboutPanel.CustomizableEdges = customizableEdges5;
             aboutPanel.FillColor = Color.White;
-            aboutPanel.Location = new Point(193, 8);
+            aboutPanel.Location = new Point(1761, 14);
             aboutPanel.Name = "aboutPanel";
             aboutPanel.ShadowDecoration.CustomizableEdges = customizableEdges6;
             aboutPanel.Size = new Size(1481, 952);
@@ -2642,7 +2658,7 @@ namespace NCSC
             manage_accounts_panel.Controls.Add(accounts_table);
             manage_accounts_panel.CustomizableEdges = customizableEdges3;
             manage_accounts_panel.FillColor = Color.White;
-            manage_accounts_panel.Location = new Point(192, 8);
+            manage_accounts_panel.Location = new Point(1788, 6);
             manage_accounts_panel.Name = "manage_accounts_panel";
             manage_accounts_panel.ShadowDecoration.CustomizableEdges = customizableEdges4;
             manage_accounts_panel.Size = new Size(1481, 958);
@@ -2771,12 +2787,21 @@ namespace NCSC
             account_status.HeaderText = "Status";
             account_status.Name = "account_status";
             // 
+            // bday95
+            // 
+            bday95.BorderColor = Color.FromArgb(128, 64, 64);
+            bday95.FillColor = Color.FromArgb(128, 64, 64);
+            bday95.Label = "95";
+            bday95.PointBorderColors.AddRange(new Color[] { Color.FromArgb(255, 166, 115) });
+            bday95.PointFillColors.AddRange(new Color[] { Color.FromArgb(255, 166, 115) });
+            bday95.TargetChart = budgetChart;
+            // 
             // Dashboard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(177, 169, 181);
-            ClientSize = new Size(1685, 976);
+            ClientSize = new Size(1810, 976);
             Controls.Add(manage_accounts_panel);
             Controls.Add(aboutPanel);
             Controls.Add(graphReportPanel);
@@ -3015,5 +3040,6 @@ namespace NCSC
         private DataGridViewTextBoxColumn accounts_municipality;
         private DataGridViewTextBoxColumn account_status;
         private Guna.UI2.WinForms.Guna2Button approve_button;
+        private Guna.Charts.WinForms.GunaLineDataset bday95;
     }
 }

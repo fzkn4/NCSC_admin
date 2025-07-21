@@ -219,8 +219,11 @@ supportive and enabling environment for the elderly.</value>
   <metadata name="bday90.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>358, 55</value>
   </metadata>
+  <metadata name="bday95.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>485, 57</value>
+  </metadata>
   <metadata name="bday100.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>523, 55</value>
+    <value>576, 54</value>
   </metadata>
   <metadata name="summary_graph_bday.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>693, 92</value>
