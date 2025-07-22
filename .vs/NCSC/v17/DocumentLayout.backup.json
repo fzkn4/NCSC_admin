@@ -3,40 +3,64 @@
   "WorkspaceRootPath": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\benefeciariesbdaymonth.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\benefeciariesbdaymonth.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\benefeciariesbdaymonth.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\benefeciariesbdaymonth.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\benefeciaries_popup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\benefeciaries_popup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\provincialaccounts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\provincialaccounts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\firebasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\firebasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\registeraccount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\registeraccount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\beneficiary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\beneficiary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\dashboard.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\dashboard.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\firebasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\firebasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\benefeciaries_popup.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\benefeciaries_popup.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\benefeciaries_popup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\benefeciaries_popup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\registeraccount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\registeraccount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\provincialaccounts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\provincialaccounts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\beneficiary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\beneficiary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,7 +70,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -54,19 +78,171 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ProvincialAccounts.cs",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\ProvincialAccounts.cs",
-              "RelativeDocumentMoniker": "NCSC\\ProvincialAccounts.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\ProvincialAccounts.cs",
-              "RelativeToolTip": "NCSC\\ProvincialAccounts.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAqAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "BenefeciariesBdayMonth.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\BenefeciariesBdayMonth.cs",
+              "RelativeDocumentMoniker": "NCSC\\BenefeciariesBdayMonth.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\BenefeciariesBdayMonth.cs",
+              "RelativeToolTip": "NCSC\\BenefeciariesBdayMonth.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-16T13:41:25.024Z"
+              "WhenOpened": "2025-07-22T02:23:38.445Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BenefeciariesBdayMonth.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\BenefeciariesBdayMonth.cs",
+              "RelativeDocumentMoniker": "NCSC\\BenefeciariesBdayMonth.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\BenefeciariesBdayMonth.cs [Design]",
+              "RelativeToolTip": "NCSC\\BenefeciariesBdayMonth.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-22T02:18:25.889Z",
+              "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "Form1.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs",
+              "RelativeDocumentMoniker": "NCSC\\Form1.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs [Design]",
+              "RelativeToolTip": "NCSC\\Form1.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-11T12:10:09.108Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs",
+              "RelativeDocumentMoniker": "NCSC\\Form1.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs",
+              "RelativeToolTip": "NCSC\\Form1.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAewFgAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-13T12:27:47.363Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Dashboard.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs",
+              "RelativeDocumentMoniker": "NCSC\\Dashboard.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs [Design]",
+              "RelativeToolTip": "NCSC\\Dashboard.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-09T21:06:01.644Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Dashboard.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs",
+              "RelativeDocumentMoniker": "NCSC\\Dashboard.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs",
+              "RelativeToolTip": "NCSC\\Dashboard.cs",
+              "ViewState": "AgIAACADAAAAAAAAAAApwFADAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-09T21:26:51.494Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Benefeciaries_popup.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.cs",
+              "RelativeDocumentMoniker": "NCSC\\Benefeciaries_popup.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.cs [Design]",
+              "RelativeToolTip": "NCSC\\Benefeciaries_popup.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-21T21:09:59.382Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Benefeciaries_popup.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.cs",
+              "RelativeDocumentMoniker": "NCSC\\Benefeciaries_popup.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.cs",
+              "RelativeToolTip": "NCSC\\Benefeciaries_popup.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAD4vxUAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-21T21:13:24.583Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Dashboard.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.Designer.cs",
+              "RelativeDocumentMoniker": "NCSC\\Dashboard.Designer.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.Designer.cs",
+              "RelativeToolTip": "NCSC\\Dashboard.Designer.cs",
+              "ViewState": "AgIAABUBAAAAAAAAAAAwwCABAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-21T22:47:28.728Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "FirebaseHelper.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\FirebaseHelper.cs",
+              "RelativeDocumentMoniker": "NCSC\\FirebaseHelper.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\FirebaseHelper.cs",
+              "RelativeToolTip": "NCSC\\FirebaseHelper.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAuwEwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-13T13:14:36.466Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Benefeciaries_popup.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.Designer.cs",
+              "RelativeDocumentMoniker": "NCSC\\Benefeciaries_popup.Designer.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.Designer.cs",
+              "RelativeToolTip": "NCSC\\Benefeciaries_popup.Designer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-21T21:51:18.501Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "RegisterAccount.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\RegisterAccount.cs",
+              "RelativeDocumentMoniker": "NCSC\\RegisterAccount.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\RegisterAccount.cs [Design]",
+              "RelativeToolTip": "NCSC\\RegisterAccount.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-13T13:23:08.639Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "NCSC\\Form1.Designer.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.Designer.cs",
+              "RelativeToolTip": "NCSC\\Form1.Designer.cs",
+              "ViewState": "AgIAAKgAAAAAAAAAAAAiwNIAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-11T12:10:01.18Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "Beneficiary.cs",
               "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Beneficiary.cs",
               "RelativeDocumentMoniker": "NCSC\\Beneficiary.cs",
@@ -78,87 +254,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "RegisterAccount.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\RegisterAccount.cs",
-              "RelativeDocumentMoniker": "NCSC\\RegisterAccount.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\RegisterAccount.cs [Design]",
-              "RelativeToolTip": "NCSC\\RegisterAccount.cs [Design]",
+              "DocumentIndex": 12,
+              "Title": "ProvincialAccounts.cs",
+              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\ProvincialAccounts.cs",
+              "RelativeDocumentMoniker": "NCSC\\ProvincialAccounts.cs",
+              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\ProvincialAccounts.cs",
+              "RelativeToolTip": "NCSC\\ProvincialAccounts.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-13T13:23:08.639Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "FirebaseHelper.cs",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\FirebaseHelper.cs",
-              "RelativeDocumentMoniker": "NCSC\\FirebaseHelper.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\FirebaseHelper.cs",
-              "RelativeToolTip": "NCSC\\FirebaseHelper.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAwEwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-13T13:14:36.466Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs",
-              "RelativeDocumentMoniker": "NCSC\\Form1.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs",
-              "RelativeToolTip": "NCSC\\Form1.cs",
-              "ViewState": "AgIAAEUAAAAAAAAAAAAAwGUAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-13T12:27:47.363Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs",
-              "RelativeDocumentMoniker": "NCSC\\Form1.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.cs [Design]",
-              "RelativeToolTip": "NCSC\\Form1.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-11T12:10:09.108Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Form1.Designer.cs",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.Designer.cs",
-              "RelativeDocumentMoniker": "NCSC\\Form1.Designer.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Form1.Designer.cs",
-              "RelativeToolTip": "NCSC\\Form1.Designer.cs",
-              "ViewState": "AgIAAKgAAAAAAAAAAAAiwNIAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-11T12:10:01.18Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Dashboard.cs",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs",
-              "RelativeDocumentMoniker": "NCSC\\Dashboard.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs",
-              "RelativeToolTip": "NCSC\\Dashboard.cs",
-              "ViewState": "AgIAANkBAAAAAAAAAAAkwPYBAAAaAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-09T21:26:51.494Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Dashboard.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs",
-              "RelativeDocumentMoniker": "NCSC\\Dashboard.cs",
-              "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Dashboard.cs [Design]",
-              "RelativeToolTip": "NCSC\\Dashboard.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-09T21:06:01.644Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2025-07-16T13:41:25.024Z"
             }
           ]
         }

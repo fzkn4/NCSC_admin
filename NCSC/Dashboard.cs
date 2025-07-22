@@ -410,7 +410,6 @@ namespace NCSC
 
         private void SummaryGraph_MouseClick(object sender, MouseEventArgs e)
         {
-            MessageBox.Show("Panel click!", "Debug");
             if (summaryGraph.Datasets.Count == 0)
                 return;
 
@@ -421,53 +420,80 @@ namespace NCSC
                 return;
             }
 
+            // Try to use GetPointIndexAt if available
+            var method = summaryGraph.GetType().GetMethod("GetPointIndexAt");
+            if (method != null)
+            {
+                var hitInfo = method.Invoke(summaryGraph, new object[] { e.X, e.Y });
+                if (hitInfo != null)
+                {
+                    var datasetIndexProp = hitInfo.GetType().GetProperty("DatasetIndex");
+                    var pointIndexProp = hitInfo.GetType().GetProperty("PointIndex");
+                    int datasetIndex = (int)datasetIndexProp.GetValue(hitInfo);
+                    int pointIndex = (int)pointIndexProp.GetValue(hitInfo);
+                    if (datasetIndex >= 0 && pointIndex >= 0)
+                    {
+                        var ds = summaryGraph.Datasets[datasetIndex] as GunaLineDataset;
+                        if (ds != null && pointIndex < ds.DataPoints.Count)
+                        {
+                            var month = ds.DataPoints[pointIndex].Label;
+                            var rows = beneficiaries_table.Rows
+                                .Cast<DataGridViewRow>()
+                                .Where(r => !r.IsNewRow)
+                                .Where(r =>
+                                {
+                                    var birthDateStr = r.Cells["birth_date_col"].Value?.ToString();
+                                    if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                                    {
+                                        return birthDate.ToString("MMMM") == month;
+                                    }
+                                    return false;
+                                })
+                                .ToList();
+                            ShowBeneficiariesForMonth(month, rows);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Improved manual hit test: map Y value to pixel
             int pointCount = dataset.DataPoints.Count;
-
-            // Estimate plotting area (THESE ARE THE VALUES TO TWEAK)
             int leftMargin = 50;
-            int rightMargin = 20; // Y-axis labels might take up less space
+            int rightMargin = 20;
             int plotWidth = summaryGraph.Width - leftMargin - rightMargin;
-
-            if (plotWidth <= 0) return; // Avoid division by zero if chart is too small
-
-            // For a single point, the spacing is not relevant, it's at the start.
+            if (plotWidth <= 0) return;
             float pointSpacing = (pointCount > 1) ? (float)plotWidth / (pointCount - 1) : 0;
+
+            float chartTopMargin = 40;
+            float chartBottomMargin = 40;
+            float chartHeight = summaryGraph.Height - chartTopMargin - chartBottomMargin;
+            float minY = 0;
+            float maxY = dataset.DataPoints.Cast<Guna.Charts.WinForms.LPoint>().Max(p => (float)p.Y);
+            if (Math.Abs(maxY - minY) < 0.0001f) maxY = minY + 1; // avoid div by zero
 
             int clickedIndex = -1;
             float minDist = float.MaxValue;
-
-            // For debugging, let's build a string
             StringBuilder debugInfo = new StringBuilder();
-            debugInfo.AppendLine($"Click X: {e.X}");
-            debugInfo.AppendLine($"Plot Width: {plotWidth}, Point Spacing: {pointSpacing:F2}");
-
+            debugInfo.AppendLine($"Click X: {e.X}, Y: {e.Y}");
             for (int i = 0; i < pointCount; i++)
             {
                 float pointX = leftMargin + (i * pointSpacing);
-                float dist = Math.Abs(e.X - pointX);
-
-                debugInfo.AppendLine($"Point {i} ({dataset.DataPoints[i].Label}): Calculated X = {pointX:F2}, Dist = {dist:F2}");
-
+                float value = (float)dataset.DataPoints[i].Y;
+                float pointY = chartTopMargin + chartHeight * (1 - (value - minY) / (maxY - minY + 0.0001f));
+                float dist = (float)Math.Sqrt(Math.Pow(e.X - pointX, 2) + Math.Pow(e.Y - pointY, 2));
+                debugInfo.AppendLine($"Point {i}: X={pointX:F2}, Y={pointY:F2}, Value={value}, Dist={dist:F2}");
                 if (dist < minDist)
                 {
                     minDist = dist;
                     clickedIndex = i;
                 }
             }
-
-            debugInfo.AppendLine($"\nClosest point is index {clickedIndex} ({dataset.DataPoints[clickedIndex].Label}) with distance {minDist:F2}.");
-
-            // You can comment this out once it's working
-            //MessageBox.Show(debugInfo.ToString(), "Chart Click Debug");
-
-            // Increase sensitivity: check if the click is within half the spacing distance, or a fixed threshold for a single point
-            bool isClickValid = (pointCount > 1 && minDist < (pointSpacing / 2)) || (pointCount == 1 && minDist < 20);
-
-            if (clickedIndex != -1 && isClickValid)
+            debugInfo.AppendLine($"Closest index: {clickedIndex}, minDist: {minDist:F2}");
+            MessageBox.Show(debugInfo.ToString(), "Chart Click Debug");
+            if (clickedIndex != -1 && minDist < 12)
             {
                 var month = dataset.DataPoints[clickedIndex].Label;
-
-                // Filter and show popup as before
                 var rows = beneficiaries_table.Rows
                     .Cast<DataGridViewRow>()
                     .Where(r => !r.IsNewRow)
@@ -481,42 +507,26 @@ namespace NCSC
                         return false;
                     })
                     .ToList();
-
                 ShowBeneficiariesForMonth(month, rows);
             }
         }
 
         private void ShowBeneficiariesForMonth(string month, List<DataGridViewRow> rows)
         {
-            Form popup = new Form();
-            popup.Text = $"Birthdays in {month}";
-            popup.Size = new Size(900, 400);
-
-            DataGridView dgv = new DataGridView();
-            dgv.Dock = DockStyle.Fill;
-            dgv.AutoGenerateColumns = false;
-            dgv.AllowUserToAddRows = false;
-            dgv.ReadOnly = true;
-
-            // Copy columns from beneficiaries_table
-            foreach (DataGridViewColumn col in beneficiaries_table.Columns)
+            // Only pass batch codes to the BenefeciariesBdayMonth form, do not display a table here
+            var batchCodes = rows
+                .Select(r => r.Cells["batch_code_col"].Value?.ToString())
+                .Where(code => !string.IsNullOrEmpty(code))
+                .ToList();
+            if (batchCodes.Any())
             {
-                dgv.Columns.Add((DataGridViewColumn)col.Clone());
+                var popup = new BenefeciariesBdayMonth(month, batchCodes);
+                popup.ShowDialog();
             }
-
-            // Add rows
-            foreach (var row in rows)
+            else
             {
-                int idx = dgv.Rows.Add();
-                for (int i = 0; i < row.Cells.Count; i++)
-                {
-                    dgv.Rows[idx].Cells[i].Value = row.Cells[i].Value;
-                }
+                MessageBox.Show($"No beneficiaries found for {month}.", "Info");
             }
-
-            popup.Controls.Add(dgv);
-            popup.StartPosition = FormStartPosition.CenterParent;
-            popup.ShowDialog();
         }
 
         private void graphReportPanel_Paint(object sender, PaintEventArgs e)
@@ -792,5 +802,89 @@ namespace NCSC
 
             popup.ShowDialog();
         }
+
+        private void jan_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("January");
+        }
+        private void feb_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("February");
+        }
+        private void mar_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("March");
+        }
+        private void apr_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("April");
+        }
+        private void may_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("May");
+        }
+        private void jun_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("June");
+        }
+        private void jul_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("July");
+        }
+        private void aug_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("August");
+        }
+        private void sep_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("September");
+        }
+        private void oct_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("October");
+        }
+        private void nov_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("November");
+        }
+        private void dec_bday_button_Click(object sender, EventArgs e)
+        {
+            ShowBeneficiariesForMonthByButton("December");
+        }
+
+        private void ShowBeneficiariesForMonthByButton(string month)
+        {
+            var rows = beneficiaries_table.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Where(r =>
+                {
+                    var birthDateStr = r.Cells["birth_date_col"].Value?.ToString();
+                    if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                    {
+                        return birthDate.ToString("MMMM") == month;
+                    }
+                    return false;
+                })
+                .ToList();
+
+            var batchCodes = rows
+                .Select(r => r.Cells["batch_code_col"].Value?.ToString())
+                .Where(code => !string.IsNullOrEmpty(code))
+                .ToList();
+
+            if (batchCodes.Any())
+            {
+                var popup = new BenefeciariesBdayMonth(month, batchCodes);
+                popup.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show($"No beneficiaries found for {month}.", "Info");
+            }
+        }
+
+        
+        
     }
 }
