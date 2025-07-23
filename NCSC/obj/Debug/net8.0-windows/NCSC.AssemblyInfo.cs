@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NCSC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a35240f8618dd9692b21cedcb6e24bdcf519192b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52ef4a88856f89949c54443ddcf312de51ff8e9c")]
 [assembly: System.Reflection.AssemblyProductAttribute("NCSC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NCSC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -28,6 +28,13 @@ namespace NCSC
             guna2Panel13.MouseClick += SummaryGraph_MouseClick;
             randomizer();
 
+            // Make the form fullscreen by default (only at runtime, not in designer)
+            if (!this.DesignMode)
+            {
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.WindowState = FormWindowState.Maximized;
+            }
+
             // Populate province filter with 'All' + provinces
             beneficiaries_province_filter.Items.Clear();
             beneficiaries_province_filter.Items.Add("All");
@@ -45,6 +52,28 @@ namespace NCSC
             beneficiaries_municipality_filter.Items.Clear();
             beneficiaries_municipality_filter.Items.Add("All");
             beneficiaries_municipality_filter.SelectedIndex = 0;
+        }
+
+        // Allow toggling fullscreen mode with F11
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.F11)
+            {
+                if (this.FormBorderStyle == FormBorderStyle.None)
+                {
+                    this.FormBorderStyle = FormBorderStyle.Sizable;
+                    this.WindowState = FormWindowState.Normal;
+                    this.TopMost = false;
+                }
+                else
+                {
+                    this.FormBorderStyle = FormBorderStyle.None;
+                    this.WindowState = FormWindowState.Maximized;
+                    this.TopMost = true;
+                }
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private async void Dashboard_Load(object sender, EventArgs e)
@@ -884,7 +913,9 @@ namespace NCSC
             }
         }
 
-        
-        
+        private void budget_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
