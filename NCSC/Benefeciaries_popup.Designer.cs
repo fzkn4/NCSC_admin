@@ -514,6 +514,7 @@
             benefeciaries_birthdate.CustomizableEdges = customizableEdges11;
             benefeciaries_birthdate.FillColor = Color.FromArgb(221, 214, 214);
             benefeciaries_birthdate.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            benefeciaries_birthdate.ForeColor = SystemColors.ControlText;
             benefeciaries_birthdate.Format = DateTimePickerFormat.Long;
             benefeciaries_birthdate.Location = new Point(30, 300);
             benefeciaries_birthdate.MaxDate = new DateTime(9998, 12, 31, 0, 0, 0, 0);
@@ -537,7 +538,7 @@
             benefeciaries_sex.FocusedColor = Color.FromArgb(94, 148, 255);
             benefeciaries_sex.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
             benefeciaries_sex.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            benefeciaries_sex.ForeColor = Color.FromArgb(68, 88, 112);
+            benefeciaries_sex.ForeColor = SystemColors.ControlText;
             benefeciaries_sex.ItemHeight = 34;
             benefeciaries_sex.Items.AddRange(new object[] { "Male", "Female" });
             benefeciaries_sex.ItemsAppearance.BackColor = Color.FromArgb(221, 214, 214);
@@ -563,7 +564,7 @@
             benefeciaries_pwd.FocusedColor = Color.FromArgb(94, 148, 255);
             benefeciaries_pwd.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
             benefeciaries_pwd.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            benefeciaries_pwd.ForeColor = Color.FromArgb(68, 88, 112);
+            benefeciaries_pwd.ForeColor = SystemColors.ControlText;
             benefeciaries_pwd.ItemHeight = 34;
             benefeciaries_pwd.Items.AddRange(new object[] { "Yes", "No" });
             benefeciaries_pwd.ItemsAppearance.BackColor = Color.FromArgb(221, 214, 214);
@@ -588,7 +589,7 @@
             benefeciaries_ip.FocusedColor = Color.FromArgb(94, 148, 255);
             benefeciaries_ip.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
             benefeciaries_ip.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            benefeciaries_ip.ForeColor = Color.FromArgb(68, 88, 112);
+            benefeciaries_ip.ForeColor = SystemColors.ControlText;
             benefeciaries_ip.ItemHeight = 34;
             benefeciaries_ip.Items.AddRange(new object[] { "Yes", "No" });
             benefeciaries_ip.ItemsAppearance.BackColor = Color.FromArgb(221, 214, 214);
@@ -611,6 +612,7 @@
             benefeciaries_date_registered.CustomizableEdges = customizableEdges3;
             benefeciaries_date_registered.FillColor = Color.FromArgb(221, 214, 214);
             benefeciaries_date_registered.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            benefeciaries_date_registered.ForeColor = SystemColors.ControlText;
             benefeciaries_date_registered.Format = DateTimePickerFormat.Long;
             benefeciaries_date_registered.Location = new Point(497, 485);
             benefeciaries_date_registered.MaxDate = new DateTime(9998, 12, 31, 0, 0, 0, 0);
@@ -632,6 +634,7 @@
             benefeciaries_date_validated.CustomizableEdges = customizableEdges1;
             benefeciaries_date_validated.FillColor = Color.FromArgb(221, 214, 214);
             benefeciaries_date_validated.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            benefeciaries_date_validated.ForeColor = SystemColors.ControlText;
             benefeciaries_date_validated.Format = DateTimePickerFormat.Long;
             benefeciaries_date_validated.Location = new Point(498, 580);
             benefeciaries_date_validated.MaxDate = new DateTime(9998, 12, 31, 0, 0, 0, 0);
