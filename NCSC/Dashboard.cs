@@ -25,6 +25,8 @@ namespace NCSC
         {
             _userRole = userRole;
             InitializeComponent();
+            InitializeBeneficiariesContextMenu();
+            beneficiaries_table.MouseDown += beneficiaries_table_MouseDown;
             sidebarButtons = new List<Guna2Button> { dashboardButton, beneficiariesButton, messageButton, graphReportButton, aboutButton };
             SelectSidebarButton(dashboardButton);
             UpdateBeneficiaryCounts();
@@ -933,6 +935,48 @@ namespace NCSC
         private void budget_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        // Context menu for beneficiaries_table
+        private ContextMenuStrip beneficiariesContextMenu;
+        private ToolTip beneficiariesToolTip;
+
+        private void InitializeBeneficiariesContextMenu()
+        {
+            beneficiariesContextMenu = new ContextMenuStrip();
+            beneficiariesContextMenu.Items.Add("Add to: Assessed");
+            beneficiariesContextMenu.Items.Add("Add to: Schedule Validation");
+            beneficiariesContextMenu.Items.Add("Add to: Total Validated");
+            beneficiariesContextMenu.Items.Add("Add to: Total Endorsed to NCSC CO");
+            beneficiariesContextMenu.Items.Add("Add to: Total Cleaned list from NCSC CO");
+            beneficiariesContextMenu.Items.Add("Add to: Scheduled payout");
+            beneficiariesContextMenu.Items.Add("Add to: No. of applicants received the Cash Gift");
+
+            beneficiariesContextMenu.Opening += (s, e) =>
+            {
+                // No-op for now
+            };
+
+            beneficiariesToolTip = new ToolTip();
+        }
+
+        private void beneficiaries_table_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                var hit = beneficiaries_table.HitTest(e.X, e.Y);
+                if (hit.RowIndex >= 0)
+                {
+                    // If the right-clicked row is not already selected, select only it
+                    if (!beneficiaries_table.Rows[hit.RowIndex].Selected)
+                    {
+                        beneficiaries_table.ClearSelection();
+                        beneficiaries_table.Rows[hit.RowIndex].Selected = true;
+                    }
+                    // Otherwise, keep the current selection (for multi-select)
+                    beneficiariesContextMenu.Show(beneficiaries_table, e.Location);
+                }
+            }
         }
     }
 }

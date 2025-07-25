@@ -123,60 +123,6 @@
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>97</value>
   </metadata>
-  <metadata name="account_id.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="account_username.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="account_province.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="accounts_municipality.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="account_status.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <data name="label36.Text" xml:space="preserve">
-    <value>Create a physically, psychologically, and emotionally healthy community of older persons who truly belong to a humane society where the well-being, independence, 
-self-reliance, and high quality of life of older persons are advocated.</value>
-  </data>
-  <data name="label34.Text" xml:space="preserve">
-    <value>The NCSC, as a single cohesive agency, promotes the rights, welfare, and benefits of Filipino senior citizens and advocates collaboration among and between different 
-stakeholders by formulating, implementing, and monitoring policies, plans, and programs and ensuring their effective implementation for the advancement of active, 
-productive, and healthy aging and providing anenabling environment for older persons.</value>
-  </data>
-  <data name="label20.Text" xml:space="preserve">
-    <value>“National Commission of Senior Citizens (NCSC) envisions a society that respects and promotes the dignity, security, wellness, and well-being of older persons, 
-and recognizes their contribution to nation-building through lifelong learning, empowerment, and development in making them truly active citizens.”</value>
-  </data>
-  <data name="label16.Text" xml:space="preserve">
-    <value>Mandate or main function is the core service needed to achieve the overall mission and objectives of the agency pursuant to Inter-Agency Task Force on the Harmonization
-of National Government Performance Monitoring, Information and Reporting System per Administrative Order No. 25 S. 2011 Memorandum Circular No. 2022-1. ​ 
-
-Pursuant to Section 2 of Republic Act (RA) No. 11350, the NCSC shall promote the advocacy of and collaboration between different stakeholders and senior citizens (SCs) to 
-ensure the effective implementation of various programs and services, particularly on the development of SCs and advancing their health, and well-being, and ensuring a 
-supportive and enabling environment for the elderly.</value>
-  </data>
-  <metadata name="graph_report_pie_dataset.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>244, 122</value>
-  </metadata>
-  <metadata name="file_name.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="file_province.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="file_municipality.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="date_submission.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="graph_report_bar_chart_dataset.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>25, 122</value>
-  </metadata>
   <metadata name="batch_code_col.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -874,6 +820,60 @@ supportive and enabling environment for the elderly.</value>
         xrcnEnGvAAAAAElFTkSuQmCC
 </value>
   </data>
+  <metadata name="account_id.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="account_username.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="account_province.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="accounts_municipality.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="account_status.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="label36.Text" xml:space="preserve">
+    <value>Create a physically, psychologically, and emotionally healthy community of older persons who truly belong to a humane society where the well-being, independence, 
+self-reliance, and high quality of life of older persons are advocated.</value>
+  </data>
+  <data name="label34.Text" xml:space="preserve">
+    <value>The NCSC, as a single cohesive agency, promotes the rights, welfare, and benefits of Filipino senior citizens and advocates collaboration among and between different 
+stakeholders by formulating, implementing, and monitoring policies, plans, and programs and ensuring their effective implementation for the advancement of active, 
+productive, and healthy aging and providing anenabling environment for older persons.</value>
+  </data>
+  <data name="label20.Text" xml:space="preserve">
+    <value>“National Commission of Senior Citizens (NCSC) envisions a society that respects and promotes the dignity, security, wellness, and well-being of older persons, 
+and recognizes their contribution to nation-building through lifelong learning, empowerment, and development in making them truly active citizens.”</value>
+  </data>
+  <data name="label16.Text" xml:space="preserve">
+    <value>Mandate or main function is the core service needed to achieve the overall mission and objectives of the agency pursuant to Inter-Agency Task Force on the Harmonization
+of National Government Performance Monitoring, Information and Reporting System per Administrative Order No. 25 S. 2011 Memorandum Circular No. 2022-1. ​ 
+
+Pursuant to Section 2 of Republic Act (RA) No. 11350, the NCSC shall promote the advocacy of and collaboration between different stakeholders and senior citizens (SCs) to 
+ensure the effective implementation of various programs and services, particularly on the development of SCs and advancing their health, and well-being, and ensuring a 
+supportive and enabling environment for the elderly.</value>
+  </data>
+  <metadata name="graph_report_pie_dataset.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>244, 122</value>
+  </metadata>
+  <metadata name="file_name.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="file_province.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="file_municipality.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="date_submission.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="graph_report_bar_chart_dataset.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>25, 122</value>
+  </metadata>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAA
