@@ -85,7 +85,8 @@ namespace NCSC
                     if (storedUsername.Equals(enteredUsername, StringComparison.OrdinalIgnoreCase)
                         && decryptedPassword == enteredPassword)
                     {
-                        Dashboard dashboard = new Dashboard();
+                        string userRole = user.role != null ? user.role.ToString() : "user";
+                        Dashboard dashboard = new Dashboard(userRole);
                         dashboard.Show();
                         this.Hide();
                         return;

@@ -19,8 +19,11 @@ namespace NCSC
     {
 
         private List<Guna2Button> sidebarButtons;
-        public Dashboard()
+        private string _userRole;
+        // Constructor for runtime, accepts user role
+        public Dashboard(string userRole)
         {
+            _userRole = userRole;
             InitializeComponent();
             sidebarButtons = new List<Guna2Button> { dashboardButton, beneficiariesButton, messageButton, graphReportButton, aboutButton };
             SelectSidebarButton(dashboardButton);
@@ -34,6 +37,8 @@ namespace NCSC
                 this.FormBorderStyle = FormBorderStyle.None;
                 this.WindowState = FormWindowState.Maximized;
             }
+
+            SetAccountsVisibilityByRole(_userRole);
 
             // Populate province filter with 'All' + provinces
             beneficiaries_province_filter.Items.Clear();
@@ -53,6 +58,9 @@ namespace NCSC
             beneficiaries_municipality_filter.Items.Add("All");
             beneficiaries_municipality_filter.SelectedIndex = 0;
         }
+
+        // Default constructor for designer compatibility
+        public Dashboard() : this("user") { }
 
         // Allow toggling fullscreen mode with F11
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -566,6 +574,15 @@ namespace NCSC
         private async void accounts_button_Click(object sender, EventArgs e)
         {
             SelectSidebarButton(accounts_button);
+        }
+
+        // Show or hide accounts button and panel based on user role
+        private void SetAccountsVisibilityByRole(string userRole)
+        {
+            MessageBox.Show($"SetAccountsVisibilityByRole called with: '{userRole}'");
+            bool isSuperAdmin = userRole != null && userRole.Trim().ToLower() == "super_admin";
+            accounts_button.Visible = isSuperAdmin;
+            // manage_accounts_panel.Visible = isSuperAdmin; // Removed to fix panel visibility logic
         }
 
         // Store all beneficiaries for filtering
