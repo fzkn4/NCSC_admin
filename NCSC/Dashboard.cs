@@ -54,11 +54,25 @@ namespace NCSC
             // Set up event handlers
             beneficiaries_province_filter.SelectedIndexChanged += beneficiaries_province_filter_SelectedIndexChanged;
             beneficiaries_municipality_filter.SelectedIndexChanged += beneficiaries_municipality_filter_SelectedIndexChanged;
+            beneficiaries_table_filter.SelectedIndexChanged += beneficiaries_table_filter_SelectedIndexChanged;
 
             // Populate municipality filter with 'All' by default
             beneficiaries_municipality_filter.Items.Clear();
             beneficiaries_municipality_filter.Items.Add("All");
             beneficiaries_municipality_filter.SelectedIndex = 0;
+
+            // Populate status filter with 'All' option
+            beneficiaries_table_filter.Items.Clear();
+            beneficiaries_table_filter.Items.Add("All");
+            beneficiaries_table_filter.Items.Add("Total Endorse from LGUs");
+            beneficiaries_table_filter.Items.Add("Assessed");
+            beneficiaries_table_filter.Items.Add("Schedule Validation");
+            beneficiaries_table_filter.Items.Add("Total Validated");
+            beneficiaries_table_filter.Items.Add("Total Endorsed to NCSC CO");
+            beneficiaries_table_filter.Items.Add("Total Cleaned list from NCSC CO");
+            beneficiaries_table_filter.Items.Add("Scheduled payout");
+            beneficiaries_table_filter.Items.Add("No. of applicants received the Cash Gift");
+            beneficiaries_table_filter.SelectedIndex = 0;
         }
 
         // Default constructor for designer compatibility
@@ -89,6 +103,20 @@ namespace NCSC
         private async void Dashboard_Load(object sender, EventArgs e)
         {
             await LoadBeneficiariesFromFirebase();
+            
+            // Add sample beneficiary data on dashboard load
+            try
+            {
+                await FirebaseHelper.PushSampleBeneficiaryAsync();
+                // Reload beneficiaries to include the new sample data
+                await LoadBeneficiariesFromFirebase();
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors silently to avoid disrupting the dashboard load
+                Console.WriteLine($"Error adding sample beneficiary: {ex.Message}");
+            }
+            
             UpdateBeneficiaryCounts();
             UpdateBirthdaySummaryGraph();
             UpdateMilestoneBirthdayChartByMonth();
@@ -628,15 +656,52 @@ namespace NCSC
             beneficiaries_table.Rows.Clear();
             string selectedProvince = beneficiaries_province_filter.SelectedItem?.ToString();
             string selectedMunicipality = beneficiaries_municipality_filter.SelectedItem?.ToString();
+            string selectedStatus = beneficiaries_table_filter.SelectedItem?.ToString();
 
             var filtered = allBeneficiaries.AsEnumerable();
+            
+            // Filter by province
             if (!string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All" && provinceMunicipalities.ContainsKey(selectedProvince))
             {
                 filtered = filtered.Where(b => b.province == selectedProvince);
             }
+            
+            // Filter by municipality
             if (!string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality")
             {
                 filtered = filtered.Where(b => b.municipality == selectedMunicipality);
+            }
+            
+            // Filter by status
+            if (!string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All")
+            {
+                switch (selectedStatus)
+                {
+                    case "Total Endorse from LGUs":
+                        filtered = filtered.Where(b => b.TotalEndorseFromLGUs);
+                        break;
+                    case "Assessed":
+                        filtered = filtered.Where(b => b.Assessed);
+                        break;
+                    case "Schedule Validation":
+                        filtered = filtered.Where(b => b.ScheduleValidation);
+                        break;
+                    case "Total Validated":
+                        filtered = filtered.Where(b => b.TotalValidated);
+                        break;
+                    case "Total Endorsed to NCSC CO":
+                        filtered = filtered.Where(b => b.TotalEndorsedToNCSCO);
+                        break;
+                    case "Total Cleaned list from NCSC CO":
+                        filtered = filtered.Where(b => b.TotalCleanedListFromNCSCO);
+                        break;
+                    case "Scheduled payout":
+                        filtered = filtered.Where(b => b.ScheduledPayout);
+                        break;
+                    case "No. of applicants received the Cash Gift":
+                        filtered = filtered.Where(b => b.NumberOfApplicantsReceivedCashGift);
+                        break;
+                }
             }
 
             foreach (var entry in filtered)
@@ -817,6 +882,11 @@ namespace NCSC
             ApplyBeneficiaryFilters();
         }
 
+        private void beneficiaries_table_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ApplyBeneficiaryFilters();
+        }
+
         private void beneficiaries_table_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -944,13 +1014,28 @@ namespace NCSC
         private void InitializeBeneficiariesContextMenu()
         {
             beneficiariesContextMenu = new ContextMenuStrip();
-            beneficiariesContextMenu.Items.Add("Add to: Assessed");
-            beneficiariesContextMenu.Items.Add("Add to: Schedule Validation");
-            beneficiariesContextMenu.Items.Add("Add to: Total Validated");
-            beneficiariesContextMenu.Items.Add("Add to: Total Endorsed to NCSC CO");
-            beneficiariesContextMenu.Items.Add("Add to: Total Cleaned list from NCSC CO");
-            beneficiariesContextMenu.Items.Add("Add to: Scheduled payout");
-            beneficiariesContextMenu.Items.Add("Add to: No. of applicants received the Cash Gift");
+            
+            // Add menu items with event handlers
+            var assessedItem = beneficiariesContextMenu.Items.Add("Add to: Assessed");
+            assessedItem.Click += (s, e) => UpdateBeneficiaryStatus("Assessed");
+            
+            var scheduleValidationItem = beneficiariesContextMenu.Items.Add("Add to: Schedule Validation");
+            scheduleValidationItem.Click += (s, e) => UpdateBeneficiaryStatus("ScheduleValidation");
+            
+            var totalValidatedItem = beneficiariesContextMenu.Items.Add("Add to: Total Validated");
+            totalValidatedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalValidated");
+            
+            var totalEndorsedItem = beneficiariesContextMenu.Items.Add("Add to: Total Endorsed to NCSC CO");
+            totalEndorsedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalEndorsedToNCSCO");
+            
+            var totalCleanedItem = beneficiariesContextMenu.Items.Add("Add to: Total Cleaned list from NCSC CO");
+            totalCleanedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalCleanedListFromNCSCO");
+            
+            var scheduledPayoutItem = beneficiariesContextMenu.Items.Add("Add to: Scheduled payout");
+            scheduledPayoutItem.Click += (s, e) => UpdateBeneficiaryStatus("ScheduledPayout");
+            
+            var receivedCashGiftItem = beneficiariesContextMenu.Items.Add("Add to: No. of applicants received the Cash Gift");
+            receivedCashGiftItem.Click += (s, e) => UpdateBeneficiaryStatus("NumberOfApplicantsReceivedCashGift");
 
             beneficiariesContextMenu.Opening += (s, e) =>
             {
@@ -958,6 +1043,130 @@ namespace NCSC
             };
 
             beneficiariesToolTip = new ToolTip();
+        }
+
+        private async void UpdateBeneficiaryStatus(string statusField)
+        {
+            if (beneficiaries_table.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a beneficiary to update.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                // Get the selected row
+                var selectedRow = beneficiaries_table.SelectedRows[0];
+                string batchCode = selectedRow.Cells["batch_code_col"].Value?.ToString();
+
+                if (string.IsNullOrEmpty(batchCode))
+                {
+                    MessageBox.Show("Invalid batch code.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Find the beneficiary in the allBeneficiaries list
+                var beneficiary = allBeneficiaries.FirstOrDefault(b => b.batch_code == batchCode);
+                if (beneficiary == null)
+                {
+                    MessageBox.Show("Beneficiary not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Update the appropriate status field
+                switch (statusField)
+                {
+                    case "Assessed":
+                        beneficiary.Assessed = true;
+                        break;
+                    case "ScheduleValidation":
+                        beneficiary.ScheduleValidation = true;
+                        break;
+                    case "TotalValidated":
+                        beneficiary.TotalValidated = true;
+                        break;
+                    case "TotalEndorsedToNCSCO":
+                        beneficiary.TotalEndorsedToNCSCO = true;
+                        break;
+                    case "TotalCleanedListFromNCSCO":
+                        beneficiary.TotalCleanedListFromNCSCO = true;
+                        break;
+                    case "ScheduledPayout":
+                        beneficiary.ScheduledPayout = true;
+                        break;
+                    case "NumberOfApplicantsReceivedCashGift":
+                        beneficiary.NumberOfApplicantsReceivedCashGift = true;
+                        break;
+                    default:
+                        MessageBox.Show("Invalid status field.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                }
+
+                // Find the Firebase key for this beneficiary
+                var allBeneficiariesFromFirebase = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
+                string beneficiaryKey = null;
+                
+                if (allBeneficiariesFromFirebase != null)
+                {
+                    foreach (var entry in allBeneficiariesFromFirebase)
+                    {
+                        if (entry.Value.batch_code == batchCode)
+                        {
+                            beneficiaryKey = entry.Key;
+                            break;
+                        }
+                    }
+                }
+
+                if (string.IsNullOrEmpty(beneficiaryKey))
+                {
+                    MessageBox.Show("Beneficiary key not found in Firebase.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Update the beneficiary in Firebase
+                await FirebaseHelper.SetDataAsync($"beneficiaries/{beneficiaryKey}", beneficiary);
+
+                // Update the local list
+                var localBeneficiary = allBeneficiaries.FirstOrDefault(b => b.batch_code == batchCode);
+                if (localBeneficiary != null)
+                {
+                    switch (statusField)
+                    {
+                        case "Assessed":
+                            localBeneficiary.Assessed = true;
+                            break;
+                        case "ScheduleValidation":
+                            localBeneficiary.ScheduleValidation = true;
+                            break;
+                        case "TotalValidated":
+                            localBeneficiary.TotalValidated = true;
+                            break;
+                        case "TotalEndorsedToNCSCO":
+                            localBeneficiary.TotalEndorsedToNCSCO = true;
+                            break;
+                        case "TotalCleanedListFromNCSCO":
+                            localBeneficiary.TotalCleanedListFromNCSCO = true;
+                            break;
+                        case "ScheduledPayout":
+                            localBeneficiary.ScheduledPayout = true;
+                            break;
+                        case "NumberOfApplicantsReceivedCashGift":
+                            localBeneficiary.NumberOfApplicantsReceivedCashGift = true;
+                            break;
+                    }
+                }
+
+                // Refresh the table
+                ApplyBeneficiaryFilters();
+                UpdateBeneficiaryCounts();
+
+                MessageBox.Show($"Beneficiary {batchCode} has been successfully updated to {statusField}.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating beneficiary status: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void beneficiaries_table_MouseDown(object sender, MouseEventArgs e)
