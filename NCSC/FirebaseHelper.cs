@@ -51,9 +51,27 @@ namespace NCSC
             DateTime birthDate = DateTime.Now.AddYears(-age).AddDays(rand.Next(0, 365));
             DateTime validatedDate = DateTime.Now.AddDays(-rand.Next(0, 365));
 
+            // Province to Municipalities mapping (same as in Dashboard)
+            var provinceMunicipalities = new Dictionary<string, List<string>>
+            {
+                { "Zamboanga del Sur", new List<string> { "Aurora", "Bayog", "Dimataling", "Dinas", "Dumalinao", "Dumingag", "Guipos", "Josefina", "Kumalarang", "Labangan", "Lakewood", "Lapuyan", "Mahayag", "Margosatubig", "Midsalip", "Molave", "Pagadian City", "Pitogo", "Ramon Magsaysay", "San Miguel", "San Pablo", "Sominot", "Tabina", "Tambulig", "Tigbao", "Tukuran", "Vincenzo A. Sagun" } },
+                { "Zamboanga del Norte", new List<string> { "Baliguian", "Godod", "Gutalac", "Jose Dalman", "Kalawit", "Katipunan", "La Libertad", "Labason", "Leon B. Postigo", "Liloy", "Manukan", "Mutia", "Piñan", "Polanco", "President Manuel A. Roxas", "Rizal", "Salug", "Sergio Osmeña Sr.", "Siayan", "Sibuco", "Sibutad", "Sindangan", "Siocon", "Sirawai", "Tampilisan", "Dipolog City", "Dapitan City" } },
+                { "Zamboanga Sibugay", new List<string> { "Alicia", "Buug", "Diplahan", "Imelda", "Ipil (capital)", "Kabasalan", "Mabuhay", "Malangas", "Naga", "Olutanga", "Payao", "Roseller Lim", "Siay", "Talusan", "Titay", "Tungawan" } },
+                { "Zamboanga City", new List<string> { "Zamboanga City" } },
+                { "Isabela City", new List<string> { "Isabela City" } }
+            };
+
             // List of valid provinces
             string[] provinces = { "Zamboanga del Norte", "Zamboanga del Sur", "Zamboanga Sibugay", "Zamboanga City", "Isabela City" };
             string randomProvince = provinces[rand.Next(provinces.Length)];
+
+            // Get a random municipality from the selected province
+            string randomMunicipality = "Municipal 1"; // Default fallback
+            if (provinceMunicipalities.ContainsKey(randomProvince))
+            {
+                var municipalities = provinceMunicipalities[randomProvince];
+                randomMunicipality = municipalities[rand.Next(municipalities.Count)];
+            }
 
             var sample = new Beneficiary
             {
@@ -63,7 +81,7 @@ namespace NCSC
                 sex = rand.Next(2) == 0 ? "Male" : "Female",
                 region = "Region IX",
                 province = randomProvince,
-                municipality = "Municipal 1",
+                municipality = randomMunicipality,
                 barangay = "Barangay 1",
                 date_validated = validatedDate.ToShortDateString(),
                 pwd = rand.Next(2) == 0 ? "Yes" : "No",

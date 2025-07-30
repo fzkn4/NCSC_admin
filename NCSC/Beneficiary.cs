@@ -11,4 +11,14 @@
     public string date_validated { get; set; }
     public string pwd { get; set; }
     public string ip { get; set; }
+    
+    // New boolean fields
+    public bool TotalEndorseFromLGUs { get; set; } = true; // Default to true
+    public bool Assessed { get; set; } = false;
+    public bool ScheduleValidation { get; set; } = false;
+    public bool TotalValidated { get; set; } = false;
+    public bool TotalEndorsedToNCSCO { get; set; } = false;
+    public bool TotalCleanedListFromNCSCO { get; set; } = false;
+    public bool ScheduledPayout { get; set; } = false;
+    public bool NumberOfApplicantsReceivedCashGift { get; set; } = false;
 }
