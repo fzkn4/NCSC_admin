@@ -11,7 +11,6 @@ using Guna.Charts.Interfaces;
 using Guna.Charts.WinForms;
 using Guna.UI2.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
-using Guna.Charts.WinForms;
 
 namespace NCSC
 {
@@ -55,6 +54,13 @@ namespace NCSC
             beneficiaries_province_filter.SelectedIndexChanged += beneficiaries_province_filter_SelectedIndexChanged;
             beneficiaries_municipality_filter.SelectedIndexChanged += beneficiaries_municipality_filter_SelectedIndexChanged;
             beneficiaries_table_filter.SelectedIndexChanged += beneficiaries_table_filter_SelectedIndexChanged;
+            
+            // Set up message button event handlers
+            msg_mailing_list_button.Click += msg_mailing_list_button_Click;
+            msg_message_button.Click += msg_message_button_Click;
+
+            // Set initial state for message buttons (default to mailing list)
+            ToggleMessageButtons(msg_mailing_list_button);
 
             // Populate municipality filter with 'All' by default
             beneficiaries_municipality_filter.Items.Clear();
@@ -289,6 +295,43 @@ namespace NCSC
             }
         }
 
+        private void msg_mailing_list_button_Click(object sender, EventArgs e)
+        {
+            ToggleMessageButtons(msg_mailing_list_button);
+        }
+
+        private void msg_message_button_Click(object sender, EventArgs e)
+        {
+            ToggleMessageButtons(msg_message_button);
+        }
+
+        private void ToggleMessageButtons(Guna.UI2.WinForms.Guna2Button selectedButton)
+        {
+            // Reset both buttons to default state
+            msg_mailing_list_button.FillColor = Color.White;
+            msg_mailing_list_button.ForeColor = SystemColors.ControlText;
+            msg_mailing_list_button.BorderColor = Color.Transparent;
+            msg_message_button.FillColor = Color.White;
+            msg_message_button.ForeColor = SystemColors.ControlText;
+            msg_message_button.BorderColor = Color.Transparent;
+
+            // Set selected button to highlighted state with custom colors
+            selectedButton.FillColor = Color.FromArgb(158, 188, 138); // Light green fill
+            selectedButton.ForeColor = Color.FromArgb(22, 97, 14); // Dark green text
+            selectedButton.BorderColor = Color.FromArgb(22, 97, 14); // Dark green border
+
+            // Show/hide panels based on selection
+            if (selectedButton == msg_mailing_list_button)
+            {
+                msg_mailing_list_panel.Visible = true;
+                msg_message_panel.Visible = false;
+            }
+            else if (selectedButton == msg_message_button)
+            {
+                msg_mailing_list_panel.Visible = false;
+                msg_message_panel.Visible = true;
+            }
+        }
 
 
         private void UpdateBeneficiaryCounts()
@@ -884,6 +927,12 @@ namespace NCSC
         private void beneficiaries_table_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
             ApplyBeneficiaryFilters();
+        }
+
+        private void beneficiaries_table_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Handle cell content click if needed
+            // This method is required by the designer but can be empty if not needed
         }
 
         private void beneficiaries_table_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
