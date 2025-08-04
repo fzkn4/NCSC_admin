@@ -651,7 +651,7 @@ namespace NCSC
         // Show or hide accounts button and panel based on user role
         private void SetAccountsVisibilityByRole(string userRole)
         {
-            MessageBox.Show($"SetAccountsVisibilityByRole called with: '{userRole}'");
+            // MessageBox.Show($"SetAccountsVisibilityByRole called with: '{userRole}'");
             bool isSuperAdmin = userRole != null && userRole.Trim().ToLower() == "super_admin";
             accounts_button.Visible = isSuperAdmin;
             // manage_accounts_panel.Visible = isSuperAdmin; // Removed to fix panel visibility logic
