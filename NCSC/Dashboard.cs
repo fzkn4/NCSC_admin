@@ -61,9 +61,8 @@ namespace NCSC
             beneficiaries_municipality_filter.Items.Add("All");
             beneficiaries_municipality_filter.SelectedIndex = 0;
 
-            // Populate status filter with 'All' option
+            // Populate status filter without 'All' option
             beneficiaries_table_filter.Items.Clear();
-            beneficiaries_table_filter.Items.Add("All");
             beneficiaries_table_filter.Items.Add("Total Endorse from LGUs");
             beneficiaries_table_filter.Items.Add("Assessed");
             beneficiaries_table_filter.Items.Add("Schedule Validation");
@@ -673,7 +672,7 @@ namespace NCSC
             }
             
             // Filter by status
-            if (!string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All")
+            if (!string.IsNullOrEmpty(selectedStatus))
             {
                 switch (selectedStatus)
                 {
