@@ -59,6 +59,12 @@ namespace NCSC
             msg_mailing_list_button.Click += msg_mailing_list_button_Click;
             msg_message_button.Click += msg_message_button_Click;
 
+            // Initialize historical report filters
+            InitializeHistoricalReportFilters();
+            
+            // Initialize batch graph filters
+            InitializeBatchGraphFilters();
+
             // Set initial state for message buttons (default to mailing list)
             ToggleMessageButtons(msg_mailing_list_button);
 
@@ -927,6 +933,134 @@ namespace NCSC
         private void beneficiaries_table_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
             ApplyBeneficiaryFilters();
+        }
+
+        // Historical Report Filters
+        private void InitializeHistoricalReportFilters()
+        {
+            // Populate historical province filter with 'All' + provinces (reusing existing mapping)
+            graph_report_historical_province_filter.Items.Clear();
+            graph_report_historical_province_filter.Items.Add("All");
+            foreach (var province in provinceMunicipalities.Keys)
+            {
+                graph_report_historical_province_filter.Items.Add(province);
+            }
+            graph_report_historical_province_filter.SelectedIndex = 0;
+
+            // Populate historical municipality filter with 'All' by default
+            graph_report_historical_municipality_filter.Items.Clear();
+            graph_report_historical_municipality_filter.Items.Add("All");
+            graph_report_historical_municipality_filter.SelectedIndex = 0;
+
+            // Set up event handlers for historical report filters
+            graph_report_historical_province_filter.SelectedIndexChanged += graph_report_historical_province_filter_SelectedIndexChanged;
+            graph_report_historical_municipality_filter.SelectedIndexChanged += graph_report_historical_municipality_filter_SelectedIndexChanged;
+        }
+
+        private void graph_report_historical_province_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            graph_report_historical_municipality_filter.Items.Clear();
+            string selectedProvince = graph_report_historical_province_filter.SelectedItem?.ToString();
+            if (!string.IsNullOrEmpty(selectedProvince) && provinceMunicipalities.ContainsKey(selectedProvince))
+            {
+                // For Zamboanga City and Isabela City, only show the city
+                if (selectedProvince == "Zamboanga City" || selectedProvince == "Isabela City")
+                {
+                    graph_report_historical_municipality_filter.Items.Add(provinceMunicipalities[selectedProvince][0]);
+                    graph_report_historical_municipality_filter.SelectedIndex = 0;
+                }
+                else
+                {
+                    graph_report_historical_municipality_filter.Items.Add("All");
+                    graph_report_historical_municipality_filter.Items.AddRange(provinceMunicipalities[selectedProvince].ToArray());
+                    graph_report_historical_municipality_filter.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                // If 'All' or invalid, show 'All' only
+                graph_report_historical_municipality_filter.Items.Add("All");
+                graph_report_historical_municipality_filter.SelectedIndex = 0;
+            }
+            // TODO: Add method to update historical report charts based on filter selection
+            UpdateHistoricalReportCharts();
+        }
+
+        private void graph_report_historical_municipality_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // TODO: Add method to update historical report charts based on filter selection
+            UpdateHistoricalReportCharts();
+        }
+
+        private void UpdateHistoricalReportCharts()
+        {
+            // This method will be implemented to update the historical report charts
+            // based on the selected province and municipality filters
+            // For now, it's a placeholder that can be expanded later
+        }
+
+        // Batch Graph Filters
+        private void InitializeBatchGraphFilters()
+        {
+            // Populate batch graph province filter with 'All' + provinces (reusing existing mapping)
+            graph_report_batch_graph_province.Items.Clear();
+            graph_report_batch_graph_province.Items.Add("All");
+            foreach (var province in provinceMunicipalities.Keys)
+            {
+                graph_report_batch_graph_province.Items.Add(province);
+            }
+            graph_report_batch_graph_province.SelectedIndex = 0;
+
+            // Populate batch graph municipality filter with 'All' by default
+            graph_report_batch_graph_municipality.Items.Clear();
+            graph_report_batch_graph_municipality.Items.Add("All");
+            graph_report_batch_graph_municipality.SelectedIndex = 0;
+
+            // Set up event handlers for batch graph filters
+            graph_report_batch_graph_province.SelectedIndexChanged += graph_report_batch_graph_province_SelectedIndexChanged;
+            graph_report_batch_graph_municipality.SelectedIndexChanged += graph_report_batch_graph_municipality_SelectedIndexChanged;
+        }
+
+        private void graph_report_batch_graph_province_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            graph_report_batch_graph_municipality.Items.Clear();
+            string selectedProvince = graph_report_batch_graph_province.SelectedItem?.ToString();
+            if (!string.IsNullOrEmpty(selectedProvince) && provinceMunicipalities.ContainsKey(selectedProvince))
+            {
+                // For Zamboanga City and Isabela City, only show the city
+                if (selectedProvince == "Zamboanga City" || selectedProvince == "Isabela City")
+                {
+                    graph_report_batch_graph_municipality.Items.Add(provinceMunicipalities[selectedProvince][0]);
+                    graph_report_batch_graph_municipality.SelectedIndex = 0;
+                }
+                else
+                {
+                    graph_report_batch_graph_municipality.Items.Add("All");
+                    graph_report_batch_graph_municipality.Items.AddRange(provinceMunicipalities[selectedProvince].ToArray());
+                    graph_report_batch_graph_municipality.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                // If 'All' or invalid, show 'All' only
+                graph_report_batch_graph_municipality.Items.Add("All");
+                graph_report_batch_graph_municipality.SelectedIndex = 0;
+            }
+            // TODO: Add method to update batch graph charts based on filter selection
+            UpdateBatchGraphCharts();
+        }
+
+        private void graph_report_batch_graph_municipality_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // TODO: Add method to update batch graph charts based on filter selection
+            UpdateBatchGraphCharts();
+        }
+
+        private void UpdateBatchGraphCharts()
+        {
+            // This method will be implemented to update the batch graph charts
+            // based on the selected province and municipality filters
+            // For now, it's a placeholder that can be expanded later
         }
 
         private void beneficiaries_table_CellContentClick(object sender, DataGridViewCellEventArgs e)
