@@ -151,7 +151,7 @@ namespace NCSC
             this.Hide();
         }
 
-        private void SelectSidebarButton(Guna.UI2.WinForms.Guna2Button selectedButton)
+        private async void SelectSidebarButton(Guna.UI2.WinForms.Guna2Button selectedButton)
         {
             // List of buttons — add accountsButton at the end (or wherever it fits logically)
             var buttons = new List<Guna.UI2.WinForms.Guna2Button>
@@ -185,6 +185,24 @@ namespace NCSC
 
                 // Show/hide panel
                 panels[i].Visible = isSelected;
+            }
+
+            // Refresh data based on which panel is selected
+            if (selectedButton == dashboardButton)
+            {
+                await RefreshDashboardData();
+            }
+            else if (selectedButton == beneficiariesButton)
+            {
+                await RefreshBeneficiariesData();
+            }
+            else if (selectedButton == graphReportButton)
+            {
+                await RefreshGraphReportData();
+            }
+            else if (selectedButton == accounts_button)
+            {
+                await RefreshAccountsData();
             }
         }
 
@@ -1367,6 +1385,84 @@ namespace NCSC
                     // Otherwise, keep the current selection (for multi-select)
                     beneficiariesContextMenu.Show(beneficiaries_table, e.Location);
                 }
+            }
+        }
+
+        // Refresh methods for each panel
+        private async Task RefreshDashboardData()
+        {
+            try
+            {
+                // Reload beneficiaries from Firebase
+                await LoadBeneficiariesFromFirebase();
+                
+                // Update all counters
+                UpdateBeneficiaryCounts();
+                
+                // Update all charts
+                UpdateBirthdaySummaryGraph();
+                UpdateMilestoneBirthdayChartByMonth();
+                
+                // Update the randomizer chart
+                randomizer();
+                
+                Console.WriteLine("Dashboard data refreshed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing dashboard data: {ex.Message}");
+            }
+        }
+
+        private async Task RefreshBeneficiariesData()
+        {
+            try
+            {
+                // Reload beneficiaries from Firebase
+                await LoadBeneficiariesFromFirebase();
+                
+                // Update counters
+                UpdateBeneficiaryCounts();
+                
+                Console.WriteLine("Beneficiaries data refreshed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing beneficiaries data: {ex.Message}");
+            }
+        }
+
+        private async Task RefreshGraphReportData()
+        {
+            try
+            {
+                // Reload beneficiaries from Firebase for chart data
+                await LoadBeneficiariesFromFirebase();
+                
+                // Update all charts in the graph report panel
+                UpdateHistoricalReportCharts();
+                UpdateBatchGraphCharts();
+                
+                Console.WriteLine("Graph report data refreshed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing graph report data: {ex.Message}");
+            }
+        }
+
+        private async Task RefreshAccountsData()
+        {
+            try
+            {
+                // Reload provincial accounts
+                await LoadProvincialAccountsAsync();
+                
+                Console.WriteLine("Accounts data refreshed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing accounts data: {ex.Message}");
             }
         }
     }
