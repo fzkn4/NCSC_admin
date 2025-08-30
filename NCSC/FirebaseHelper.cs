@@ -77,15 +77,20 @@ namespace NCSC
             {
                 batch_code = $"BATCH-{rand.Next(1000, 9999)}",
                 age = age.ToString(),
-                birth_date = birthDate.ToShortDateString(),
-                sex = rand.Next(2) == 0 ? "Male" : "Female",
+                birth_date = birthDate.ToString("yyyy-MM-dd"),
+                sex = rand.Next(2) == 0 ? "M" : "F",
                 region = "Region IX",
                 province = randomProvince,
                 municipality = randomMunicipality,
                 barangay = "Barangay 1",
-                date_validated = validatedDate.ToShortDateString(),
+                date_validated = validatedDate.ToString("yyyy-MM-dd"),
                 pwd = rand.Next(2) == 0 ? "Yes" : "No",
-                ip = rand.Next(2) == 0 ? "Yes" : "No"
+                ip = rand.Next(2) == 0 ? "Yes" : "No",
+                name = "Sample Beneficiary",
+                first_name = "Sample",
+                middle_name = "",
+                last_name = "Beneficiary",
+                province_municipality_date = $"{randomProvince}_{randomMunicipality}_{validatedDate:yyyy-MM-dd}"
             };
 
             return await PushDataAsync("beneficiaries", sample);

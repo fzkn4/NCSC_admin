@@ -73,8 +73,9 @@ namespace NCSC
             beneficiaries_municipality_filter.Items.Add("All");
             beneficiaries_municipality_filter.SelectedIndex = 0;
 
-            // Populate status filter without 'All' option
+            // Populate status filter with 'All' option first
             beneficiaries_table_filter.Items.Clear();
+            beneficiaries_table_filter.Items.Add("All");
             beneficiaries_table_filter.Items.Add("Total Endorse from LGUs");
             beneficiaries_table_filter.Items.Add("Assessed");
             beneficiaries_table_filter.Items.Add("Schedule Validation");
@@ -484,9 +485,7 @@ namespace NCSC
 
                 string birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
 
-                if (DateTime.TryParseExact(birthDateStr, "dd/MM/yyyy",
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None, out DateTime birthDate))
+                if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
                 {
                     int birthYear = birthDate.Year;
                     int birthMonth = birthDate.Month;
@@ -702,15 +701,47 @@ namespace NCSC
             beneficiaries_table.Columns.Add("pwd_col", "PWD");
             beneficiaries_table.Columns.Add("ip_col", "IP");
 
-            var beneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
-
-            allBeneficiaries.Clear();
-            if (beneficiaries != null)
+            try
             {
-                foreach (var entry in beneficiaries.Values)
+                // First, get the raw response to see the structure
+                var rawResponse = await FirebaseHelper.GetDataAsync("beneficiaries");
+                Console.WriteLine($"Raw Firebase response: {rawResponse}");
+                
+                var beneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
+
+                allBeneficiaries.Clear();
+                if (beneficiaries != null)
                 {
-                    allBeneficiaries.Add(entry);
+                    Console.WriteLine($"Loaded {beneficiaries.Count} beneficiaries from Firebase");
+                    foreach (var entry in beneficiaries.Values)
+                    {
+                        if (entry != null)
+                        {
+                            // Ensure boolean fields are properly initialized
+                            if (entry.TotalEndorseFromLGUs == false && string.IsNullOrEmpty(entry.batch_code))
+                            {
+                                // This might be a deserialization issue, skip it
+                                Console.WriteLine($"Skipping invalid beneficiary entry");
+                                continue;
+                            }
+                            
+                            allBeneficiaries.Add(entry);
+                            Console.WriteLine($"Added beneficiary: {entry.batch_code} - {entry.name ?? "No name"} - TotalEndorseFromLGUs: {entry.TotalEndorseFromLGUs}");
+                            Console.WriteLine($"  Sex: '{entry.sex}' -> Normalized: '{entry.GetNormalizedSex()}'");
+                            Console.WriteLine($"  Birth Date: '{entry.birth_date}' -> Normalized: '{entry.GetNormalizedBirthDate()}'");
+                            Console.WriteLine($"  Date Validated: '{entry.date_validated}' -> Normalized: '{entry.GetNormalizedDateValidated()}'");
+                        }
+                    }
                 }
+                else
+                {
+                    Console.WriteLine("No beneficiaries data received from Firebase");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading beneficiaries from Firebase: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
 
             ApplyBeneficiaryFilters();
@@ -723,6 +754,9 @@ namespace NCSC
             string selectedProvince = beneficiaries_province_filter.SelectedItem?.ToString();
             string selectedMunicipality = beneficiaries_municipality_filter.SelectedItem?.ToString();
             string selectedStatus = beneficiaries_table_filter.SelectedItem?.ToString();
+
+            Console.WriteLine($"Applying filters - Total beneficiaries: {allBeneficiaries.Count}");
+            Console.WriteLine($"Selected province: {selectedProvince}, municipality: {selectedMunicipality}, status: {selectedStatus}");
 
             var filtered = allBeneficiaries.AsEnumerable();
             
@@ -739,53 +773,69 @@ namespace NCSC
             }
             
             // Filter by status
-            if (!string.IsNullOrEmpty(selectedStatus))
+            if (!string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All")
             {
+                Console.WriteLine($"Filtering by status: {selectedStatus}");
                 switch (selectedStatus)
                 {
                     case "Total Endorse from LGUs":
                         filtered = filtered.Where(b => b.TotalEndorseFromLGUs);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalEndorseFromLGUs");
                         break;
                     case "Assessed":
                         filtered = filtered.Where(b => b.Assessed);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for Assessed");
                         break;
                     case "Schedule Validation":
                         filtered = filtered.Where(b => b.ScheduleValidation);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for ScheduleValidation");
                         break;
                     case "Total Validated":
                         filtered = filtered.Where(b => b.TotalValidated);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalValidated");
                         break;
                     case "Total Endorsed to NCSC CO":
                         filtered = filtered.Where(b => b.TotalEndorsedToNCSCO);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalEndorsedToNCSCO");
                         break;
                     case "Total Cleaned list from NCSC CO":
                         filtered = filtered.Where(b => b.TotalCleanedListFromNCSCO);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalCleanedListFromNCSCO");
                         break;
                     case "Scheduled payout":
                         filtered = filtered.Where(b => b.ScheduledPayout);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for ScheduledPayout");
                         break;
                     case "No. of applicants received the Cash Gift":
                         filtered = filtered.Where(b => b.NumberOfApplicantsReceivedCashGift);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for NumberOfApplicantsReceivedCashGift");
                         break;
                 }
             }
+            else
+            {
+                Console.WriteLine("No status filter applied (showing all records)");
+            }
 
+            int addedCount = 0;
             foreach (var entry in filtered)
             {
                 beneficiaries_table.Rows.Add(
                     entry.batch_code,
                     entry.age,
-                    entry.birth_date,
-                    entry.sex,
+                    entry.GetNormalizedBirthDate(),
+                    entry.GetNormalizedSex(),
                     entry.region,
                     entry.province,
                     entry.municipality,
                     entry.barangay,
-                    entry.date_validated,
+                    entry.GetNormalizedDateValidated(),
                     entry.pwd,
                     entry.ip
                 );
+                addedCount++;
             }
+            Console.WriteLine($"Added {addedCount} records to the table");
         }
 
         private void upload_file_button_Click(object sender, EventArgs e)

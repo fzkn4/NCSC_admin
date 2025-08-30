@@ -12,6 +12,13 @@
     public string pwd { get; set; }
     public string ip { get; set; }
     
+    // New fields from updated data structure
+    public string name { get; set; }
+    public string first_name { get; set; }
+    public string middle_name { get; set; }
+    public string last_name { get; set; }
+    public string province_municipality_date { get; set; }
+    
     // New boolean fields
     public bool TotalEndorseFromLGUs { get; set; } = true; // Default to true
     public bool Assessed { get; set; } = false;
@@ -21,4 +28,64 @@
     public bool TotalCleanedListFromNCSCO { get; set; } = false;
     public bool ScheduledPayout { get; set; } = false;
     public bool NumberOfApplicantsReceivedCashGift { get; set; } = false;
+
+    // Constructor to ensure proper initialization
+    public Beneficiary()
+    {
+        // Ensure boolean fields have proper default values
+        TotalEndorseFromLGUs = true; // Default to true for new beneficiaries
+        Assessed = false;
+        ScheduleValidation = false;
+        TotalValidated = false;
+        TotalEndorsedToNCSCO = false;
+        TotalCleanedListFromNCSCO = false;
+        ScheduledPayout = false;
+        NumberOfApplicantsReceivedCashGift = false;
+    }
+
+    // Method to normalize sex field format for display
+    public string GetNormalizedSex()
+    {
+        if (string.IsNullOrEmpty(sex)) return "";
+        
+        switch (sex.ToUpper().Trim())
+        {
+            case "M":
+            case "MALE":
+                return "Male";
+            case "F":
+            case "FEMALE":
+                return "Female";
+            default:
+                return sex; // Return original if not recognized
+        }
+    }
+
+    // Method to normalize date format for display
+    public string GetNormalizedBirthDate()
+    {
+        if (string.IsNullOrEmpty(birth_date)) return "";
+        
+        // Try to parse the date and format it consistently
+        if (DateTime.TryParse(birth_date, out DateTime parsedDate))
+        {
+            return parsedDate.ToString("dd/MM/yyyy");
+        }
+        
+        return birth_date; // Return original if parsing fails
+    }
+
+    // Method to normalize date validated format for display
+    public string GetNormalizedDateValidated()
+    {
+        if (string.IsNullOrEmpty(date_validated)) return "";
+        
+        // Try to parse the date and format it consistently
+        if (DateTime.TryParse(date_validated, out DateTime parsedDate))
+        {
+            return parsedDate.ToString("dd/MM/yyyy");
+        }
+        
+        return date_validated; // Return original if parsing fails
+    }
 }
