@@ -119,8 +119,6 @@ namespace NCSC
             // Add sample beneficiary data on dashboard load
             try
             {
-                await FirebaseHelper.PushSampleBeneficiaryAsync();
-                // Reload beneficiaries to include the new sample data
                 await LoadBeneficiariesFromFirebase();
             }
             catch (Exception ex)

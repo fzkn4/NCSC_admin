@@ -44,56 +44,56 @@ namespace NCSC
             return JsonConvert.DeserializeObject<T>(json);
         }
 
-        public static async Task<string> PushSampleBeneficiaryAsync()
-        {
-            var rand = new Random();
-            int age = rand.Next(60, 100);
-            DateTime birthDate = DateTime.Now.AddYears(-age).AddDays(rand.Next(0, 365));
-            DateTime validatedDate = DateTime.Now.AddDays(-rand.Next(0, 365));
+        //public static async Task<string> PushSampleBeneficiaryAsync()
+        //{
+        //    var rand = new Random();
+        //    int age = rand.Next(60, 100);
+        //    DateTime birthDate = DateTime.Now.AddYears(-age).AddDays(rand.Next(0, 365));
+        //    DateTime validatedDate = DateTime.Now.AddDays(-rand.Next(0, 365));
 
-            // Province to Municipalities mapping (same as in Dashboard)
-            var provinceMunicipalities = new Dictionary<string, List<string>>
-            {
-                { "Zamboanga del Sur", new List<string> { "Aurora", "Bayog", "Dimataling", "Dinas", "Dumalinao", "Dumingag", "Guipos", "Josefina", "Kumalarang", "Labangan", "Lakewood", "Lapuyan", "Mahayag", "Margosatubig", "Midsalip", "Molave", "Pagadian City", "Pitogo", "Ramon Magsaysay", "San Miguel", "San Pablo", "Sominot", "Tabina", "Tambulig", "Tigbao", "Tukuran", "Vincenzo A. Sagun" } },
-                { "Zamboanga del Norte", new List<string> { "Baliguian", "Godod", "Gutalac", "Jose Dalman", "Kalawit", "Katipunan", "La Libertad", "Labason", "Leon B. Postigo", "Liloy", "Manukan", "Mutia", "Piñan", "Polanco", "President Manuel A. Roxas", "Rizal", "Salug", "Sergio Osmeña Sr.", "Siayan", "Sibuco", "Sibutad", "Sindangan", "Siocon", "Sirawai", "Tampilisan", "Dipolog City", "Dapitan City" } },
-                { "Zamboanga Sibugay", new List<string> { "Alicia", "Buug", "Diplahan", "Imelda", "Ipil (capital)", "Kabasalan", "Mabuhay", "Malangas", "Naga", "Olutanga", "Payao", "Roseller Lim", "Siay", "Talusan", "Titay", "Tungawan" } },
-                { "Zamboanga City", new List<string> { "Zamboanga City" } },
-                { "Isabela City", new List<string> { "Isabela City" } }
-            };
+        //    // Province to Municipalities mapping (same as in Dashboard)
+        //    var provinceMunicipalities = new Dictionary<string, List<string>>
+        //    {
+        //        { "Zamboanga del Sur", new List<string> { "Aurora", "Bayog", "Dimataling", "Dinas", "Dumalinao", "Dumingag", "Guipos", "Josefina", "Kumalarang", "Labangan", "Lakewood", "Lapuyan", "Mahayag", "Margosatubig", "Midsalip", "Molave", "Pagadian City", "Pitogo", "Ramon Magsaysay", "San Miguel", "San Pablo", "Sominot", "Tabina", "Tambulig", "Tigbao", "Tukuran", "Vincenzo A. Sagun" } },
+        //        { "Zamboanga del Norte", new List<string> { "Baliguian", "Godod", "Gutalac", "Jose Dalman", "Kalawit", "Katipunan", "La Libertad", "Labason", "Leon B. Postigo", "Liloy", "Manukan", "Mutia", "Piñan", "Polanco", "President Manuel A. Roxas", "Rizal", "Salug", "Sergio Osmeña Sr.", "Siayan", "Sibuco", "Sibutad", "Sindangan", "Siocon", "Sirawai", "Tampilisan", "Dipolog City", "Dapitan City" } },
+        //        { "Zamboanga Sibugay", new List<string> { "Alicia", "Buug", "Diplahan", "Imelda", "Ipil (capital)", "Kabasalan", "Mabuhay", "Malangas", "Naga", "Olutanga", "Payao", "Roseller Lim", "Siay", "Talusan", "Titay", "Tungawan" } },
+        //        { "Zamboanga City", new List<string> { "Zamboanga City" } },
+        //        { "Isabela City", new List<string> { "Isabela City" } }
+        //    };
 
-            // List of valid provinces
-            string[] provinces = { "Zamboanga del Norte", "Zamboanga del Sur", "Zamboanga Sibugay", "Zamboanga City", "Isabela City" };
-            string randomProvince = provinces[rand.Next(provinces.Length)];
+        //    // List of valid provinces
+        //    string[] provinces = { "Zamboanga del Norte", "Zamboanga del Sur", "Zamboanga Sibugay", "Zamboanga City", "Isabela City" };
+        //    string randomProvince = provinces[rand.Next(provinces.Length)];
 
-            // Get a random municipality from the selected province
-            string randomMunicipality = "Municipal 1"; // Default fallback
-            if (provinceMunicipalities.ContainsKey(randomProvince))
-            {
-                var municipalities = provinceMunicipalities[randomProvince];
-                randomMunicipality = municipalities[rand.Next(municipalities.Count)];
-            }
+        //    // Get a random municipality from the selected province
+        //    string randomMunicipality = "Municipal 1"; // Default fallback
+        //    if (provinceMunicipalities.ContainsKey(randomProvince))
+        //    {
+        //        var municipalities = provinceMunicipalities[randomProvince];
+        //        randomMunicipality = municipalities[rand.Next(municipalities.Count)];
+        //    }
 
-            var sample = new Beneficiary
-            {
-                batch_code = $"BATCH-{rand.Next(1000, 9999)}",
-                age = age.ToString(),
-                birth_date = birthDate.ToString("yyyy-MM-dd"),
-                sex = rand.Next(2) == 0 ? "M" : "F",
-                region = "Region IX",
-                province = randomProvince,
-                municipality = randomMunicipality,
-                barangay = "Barangay 1",
-                date_validated = validatedDate.ToString("yyyy-MM-dd"),
-                pwd = rand.Next(2) == 0 ? "Yes" : "No",
-                ip = rand.Next(2) == 0 ? "Yes" : "No",
-                name = "Sample Beneficiary",
-                first_name = "Sample",
-                middle_name = "",
-                last_name = "Beneficiary",
-                province_municipality_date = $"{randomProvince}_{randomMunicipality}_{validatedDate:yyyy-MM-dd}"
-            };
+        //    var sample = new Beneficiary
+        //    {
+        //        batch_code = $"BATCH-{rand.Next(1000, 9999)}",
+        //        age = age.ToString(),
+        //        birth_date = birthDate.ToString("yyyy-MM-dd"),
+        //        sex = rand.Next(2) == 0 ? "M" : "F",
+        //        region = "Region IX",
+        //        province = randomProvince,
+        //        municipality = randomMunicipality,
+        //        barangay = "Barangay 1",
+        //        date_validated = validatedDate.ToString("yyyy-MM-dd"),
+        //        pwd = rand.Next(2) == 0 ? "Yes" : "No",
+        //        ip = rand.Next(2) == 0 ? "Yes" : "No",
+        //        name = "Sample Beneficiary",
+        //        first_name = "Sample",
+        //        middle_name = "",
+        //        last_name = "Beneficiary",
+        //        province_municipality_date = $"{randomProvince}_{randomMunicipality}_{validatedDate:yyyy-MM-dd}"
+        //    };
 
-            return await PushDataAsync("beneficiaries", sample);
-        }
+        //    return await PushDataAsync("beneficiaries", sample);
+        //}
     }
 }
