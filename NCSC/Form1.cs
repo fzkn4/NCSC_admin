@@ -11,11 +11,33 @@ namespace NCSC
         public Form1()
         {
             InitializeComponent();
+            show_password.CheckedChanged += ShowPassword_CheckedChanged;
         }
 
         private void closeButton_Click(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void ShowPassword_CheckedChanged(object sender, EventArgs e)
+        {
+            TogglePasswordVisibility();
+        }
+
+        private void TogglePasswordVisibility()
+        {
+            if (show_password.Checked)
+            {
+                // Show password - remove password character
+                passwordField.UseSystemPasswordChar = false;
+                passwordField.PasswordChar = '\0';
+            }
+            else
+            {
+                // Hide password - use system password character
+                passwordField.UseSystemPasswordChar = true;
+                passwordField.PasswordChar = '*';
+            }
         }
 
         private void label6_Click(object sender, EventArgs e)

@@ -45,7 +45,7 @@
             register_label = new Label();
             loginButton = new Guna.UI2.WinForms.Guna2Button();
             label5 = new Label();
-            remember_checkbox = new Guna.UI2.WinForms.Guna2CheckBox();
+            show_password = new Guna.UI2.WinForms.Guna2CheckBox();
             label4 = new Label();
             passwordField = new Guna.UI2.WinForms.Guna2TextBox();
             label3 = new Label();
@@ -71,7 +71,7 @@
             guna2GradientPanel1.Controls.Add(register_label);
             guna2GradientPanel1.Controls.Add(loginButton);
             guna2GradientPanel1.Controls.Add(label5);
-            guna2GradientPanel1.Controls.Add(remember_checkbox);
+            guna2GradientPanel1.Controls.Add(show_password);
             guna2GradientPanel1.Controls.Add(label4);
             guna2GradientPanel1.Controls.Add(passwordField);
             guna2GradientPanel1.Controls.Add(label3);
@@ -138,27 +138,27 @@
             label5.Text = "Forgot password?";
             label5.TextAlign = ContentAlignment.BottomCenter;
             // 
-            // remember_checkbox
+            // show_password
             // 
-            remember_checkbox.Animated = true;
-            remember_checkbox.AutoSize = true;
-            remember_checkbox.BackColor = Color.Transparent;
-            remember_checkbox.CheckedState.BorderColor = Color.FromArgb(134, 115, 243);
-            remember_checkbox.CheckedState.BorderRadius = 4;
-            remember_checkbox.CheckedState.BorderThickness = 0;
-            remember_checkbox.CheckedState.FillColor = Color.FromArgb(134, 115, 243);
-            remember_checkbox.Font = new Font("Poppins SemiBold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            remember_checkbox.Location = new Point(42, 274);
-            remember_checkbox.Name = "remember_checkbox";
-            remember_checkbox.Size = new Size(120, 26);
-            remember_checkbox.TabIndex = 8;
-            remember_checkbox.Text = "Remember me";
-            remember_checkbox.TextAlign = ContentAlignment.MiddleCenter;
-            remember_checkbox.UncheckedState.BorderColor = Color.White;
-            remember_checkbox.UncheckedState.BorderRadius = 4;
-            remember_checkbox.UncheckedState.BorderThickness = 0;
-            remember_checkbox.UncheckedState.FillColor = Color.White;
-            remember_checkbox.UseVisualStyleBackColor = false;
+            show_password.Animated = true;
+            show_password.AutoSize = true;
+            show_password.BackColor = Color.Transparent;
+            show_password.CheckedState.BorderColor = Color.FromArgb(134, 115, 243);
+            show_password.CheckedState.BorderRadius = 4;
+            show_password.CheckedState.BorderThickness = 0;
+            show_password.CheckedState.FillColor = Color.FromArgb(134, 115, 243);
+            show_password.Font = new Font("Poppins SemiBold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            show_password.Location = new Point(42, 274);
+            show_password.Name = "show_password";
+            show_password.Size = new Size(125, 26);
+            show_password.TabIndex = 8;
+            show_password.Text = "Show Password";
+            show_password.TextAlign = ContentAlignment.MiddleCenter;
+            show_password.UncheckedState.BorderColor = Color.White;
+            show_password.UncheckedState.BorderRadius = 4;
+            show_password.UncheckedState.BorderThickness = 0;
+            show_password.UncheckedState.FillColor = Color.White;
+            show_password.UseVisualStyleBackColor = false;
             // 
             // label4
             // 
@@ -191,11 +191,13 @@
             passwordField.Location = new Point(42, 229);
             passwordField.Margin = new Padding(3, 6, 3, 6);
             passwordField.Name = "passwordField";
+            passwordField.PasswordChar = '*';
             passwordField.PlaceholderText = "";
             passwordField.SelectedText = "";
             passwordField.ShadowDecoration.CustomizableEdges = customizableEdges4;
             passwordField.Size = new Size(277, 39);
             passwordField.TabIndex = 6;
+            passwordField.UseSystemPasswordChar = true;
             // 
             // label3
             // 
@@ -336,7 +338,7 @@
         private Guna.UI2.WinForms.Guna2TextBox usernameField;
         private Label label4;
         private Guna.UI2.WinForms.Guna2TextBox passwordField;
-        private Guna.UI2.WinForms.Guna2CheckBox remember_checkbox;
+        private Guna.UI2.WinForms.Guna2CheckBox show_password;
         private Guna.UI2.WinForms.Guna2Button loginButton;
         private Label label5;
         private Label register_label;
