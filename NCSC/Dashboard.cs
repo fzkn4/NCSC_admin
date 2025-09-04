@@ -254,7 +254,9 @@ namespace NCSC
             {
                 Label = "Birthdays per Month",
                 BorderWidth = 3,
-                PointRadius = 4
+                PointRadius = 4,
+                BorderColor = Color.FromArgb(134, 115, 243),
+                FillColor = Color.FromArgb(134, 115, 243)
             };
 
             // Initialize month count dictionary
@@ -269,13 +271,10 @@ namespace NCSC
                 monthCounts[month] = 0;
             }
 
-            // Count how many birthdays per month
-            foreach (DataGridViewRow row in beneficiaries_table.Rows)
+            // Count how many birthdays per month from all beneficiaries (not just filtered table)
+            foreach (var beneficiary in allBeneficiaries)
             {
-                if (row.IsNewRow) continue;
-
-                string birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
-                if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                if (DateTime.TryParse(beneficiary.birth_date, out DateTime birthDate))
                 {
                     string monthName = birthDate.ToString("MMMM");
                     if (monthCounts.ContainsKey(monthName))
@@ -426,13 +425,10 @@ namespace NCSC
                 birthdayCounts[monthName] = 0;
             }
 
-            // Count birthdays per month from table
-            foreach (DataGridViewRow row in beneficiaries_table.Rows)
+            // Count birthdays per month from all beneficiaries (not just filtered table)
+            foreach (var beneficiary in allBeneficiaries)
             {
-                if (row.IsNewRow) continue;
-
-                string birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
-                if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                if (DateTime.TryParse(beneficiary.birth_date, out DateTime birthDate))
                 {
                     string monthName = birthDate.ToString("MMMM");
                     if (birthdayCounts.ContainsKey(monthName))
@@ -446,6 +442,10 @@ namespace NCSC
             // Clear old chart data
             summary_graph_bday.DataPoints.Clear();
             summaryGraph.Datasets.Clear();
+
+            // Ensure color styling is maintained
+            summary_graph_bday.BorderColor = Color.FromArgb(134, 115, 243);
+            summary_graph_bday.FillColor = Color.FromArgb(134, 115, 243);
 
             // Add values to the chart (all integers)
             foreach (var entry in sortedMonthCounts)
@@ -477,13 +477,10 @@ namespace NCSC
 
             int currentYear = DateTime.Now.Year;
 
-            foreach (DataGridViewRow row in beneficiaries_table.Rows)
+            // Count milestone birthdays from all beneficiaries (not just filtered table)
+            foreach (var beneficiary in allBeneficiaries)
             {
-                if (row.IsNewRow) continue;
-
-                string birthDateStr = row.Cells["birth_date_col"].Value?.ToString();
-
-                if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                if (DateTime.TryParse(beneficiary.birth_date, out DateTime birthDate))
                 {
                     int birthYear = birthDate.Year;
                     int birthMonth = birthDate.Month;
@@ -567,20 +564,7 @@ namespace NCSC
                         if (ds != null && pointIndex < ds.DataPoints.Count)
                         {
                             var month = ds.DataPoints[pointIndex].Label;
-                            var rows = beneficiaries_table.Rows
-                                .Cast<DataGridViewRow>()
-                                .Where(r => !r.IsNewRow)
-                                .Where(r =>
-                                {
-                                    var birthDateStr = r.Cells["birth_date_col"].Value?.ToString();
-                                    if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
-                                    {
-                                        return birthDate.ToString("MMMM") == month;
-                                    }
-                                    return false;
-                                })
-                                .ToList();
-                            ShowBeneficiariesForMonth(month, rows);
+                            ShowBeneficiariesForMonth(month);
                         }
                         return;
                     }
@@ -624,30 +608,22 @@ namespace NCSC
             if (clickedIndex != -1 && minDist < 12)
             {
                 var month = dataset.DataPoints[clickedIndex].Label;
-                var rows = beneficiaries_table.Rows
-                    .Cast<DataGridViewRow>()
-                    .Where(r => !r.IsNewRow)
-                    .Where(r =>
-                    {
-                        var birthDateStr = r.Cells["birth_date_col"].Value?.ToString();
-                        if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
-                        {
-                            return birthDate.ToString("MMMM") == month;
-                        }
-                        return false;
-                    })
-                    .ToList();
-                ShowBeneficiariesForMonth(month, rows);
+                ShowBeneficiariesForMonth(month);
             }
         }
 
-        private void ShowBeneficiariesForMonth(string month, List<DataGridViewRow> rows)
+        private void ShowBeneficiariesForMonth(string month, List<DataGridViewRow> rows = null)
         {
-            // Only pass batch codes to the BenefeciariesBdayMonth form, do not display a table here
-            var batchCodes = rows
-                .Select(r => r.Cells["batch_code_col"].Value?.ToString())
+            // Get all beneficiaries from the allBeneficiaries list instead of the filtered table rows
+            var beneficiariesForMonth = allBeneficiaries
+                .Where(b => b.GetBirthMonth() == month)
+                .ToList();
+
+            var batchCodes = beneficiariesForMonth
+                .Select(b => b.batch_code)
                 .Where(code => !string.IsNullOrEmpty(code))
                 .ToList();
+            
             if (batchCodes.Any())
             {
                 var popup = new BenefeciariesBdayMonth(month, batchCodes);
@@ -1220,22 +1196,13 @@ namespace NCSC
 
         private void ShowBeneficiariesForMonthByButton(string month)
         {
-            var rows = beneficiaries_table.Rows
-                .Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
-                .Where(r =>
-                {
-                    var birthDateStr = r.Cells["birth_date_col"].Value?.ToString();
-                    if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
-                    {
-                        return birthDate.ToString("MMMM") == month;
-                    }
-                    return false;
-                })
+            // Get all beneficiaries from the allBeneficiaries list instead of the filtered table
+            var beneficiariesForMonth = allBeneficiaries
+                .Where(b => b.GetBirthMonth() == month)
                 .ToList();
 
-            var batchCodes = rows
-                .Select(r => r.Cells["batch_code_col"].Value?.ToString())
+            var batchCodes = beneficiariesForMonth
+                .Select(b => b.batch_code)
                 .Where(code => !string.IsNullOrEmpty(code))
                 .ToList();
 

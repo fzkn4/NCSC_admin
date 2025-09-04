@@ -69,7 +69,7 @@
         // Try to parse the date and format it consistently
         if (DateTime.TryParse(birth_date, out DateTime parsedDate))
         {
-            return parsedDate.ToString("dd/MM/yyyy");
+            return parsedDate.ToString("MM-dd-yyyy");
         }
         
         return birth_date; // Return original if parsing fails
@@ -83,9 +83,22 @@
         // Try to parse the date and format it consistently
         if (DateTime.TryParse(date_validated, out DateTime parsedDate))
         {
-            return parsedDate.ToString("dd/MM/yyyy");
+            return parsedDate.ToString("MM-dd-yyyy");
         }
         
         return date_validated; // Return original if parsing fails
+    }
+
+    // Method to get the birth month name for filtering
+    public string GetBirthMonth()
+    {
+        if (string.IsNullOrEmpty(birth_date)) return "";
+        
+        if (DateTime.TryParse(birth_date, out DateTime parsedDate))
+        {
+            return parsedDate.ToString("MMMM");
+        }
+        
+        return ""; // Return empty if parsing fails
     }
 }

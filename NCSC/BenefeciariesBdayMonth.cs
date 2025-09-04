@@ -12,10 +12,12 @@ namespace NCSC
 {
     public partial class BenefeciariesBdayMonth : Form
     {
+        private string targetMonth;
 
         public BenefeciariesBdayMonth(string month, List<string> batchCodes)
         {
             InitializeComponent();
+            targetMonth = month;
             LoadBeneficiariesForMonthAsync(batchCodes);
             header.Text = $"Month of {month}";
         }
@@ -29,21 +31,26 @@ namespace NCSC
             {
                 foreach (var entry in allBeneficiaries.Values)
                 {
+                    // First check if the batch code is in the list
                     if (batchCodes.Contains(entry.batch_code))
                     {
-                        beneficiaries_bday_month_table.Rows.Add(
-                            entry.batch_code,
-                            entry.age,
-                            entry.birth_date,
-                            entry.sex,
-                            entry.region,
-                            entry.province,
-                            entry.municipality,
-                            entry.barangay,
-                            entry.date_validated,
-                            entry.pwd,
-                            entry.ip
-                        );
+                        // Then check if the birth month matches the target month
+                        if (entry.GetBirthMonth() == targetMonth)
+                        {
+                            beneficiaries_bday_month_table.Rows.Add(
+                                entry.batch_code,
+                                entry.age,
+                                entry.GetNormalizedBirthDate(),
+                                entry.GetNormalizedSex(),
+                                entry.region,
+                                entry.province,
+                                entry.municipality,
+                                entry.barangay,
+                                entry.GetNormalizedDateValidated(),
+                                entry.pwd,
+                                entry.ip
+                            );
+                        }
                     }
                 }
             }
