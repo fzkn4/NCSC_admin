@@ -54,14 +54,14 @@ namespace NCSC
             beneficiaries_province_filter.SelectedIndexChanged += beneficiaries_province_filter_SelectedIndexChanged;
             beneficiaries_municipality_filter.SelectedIndexChanged += beneficiaries_municipality_filter_SelectedIndexChanged;
             beneficiaries_table_filter.SelectedIndexChanged += beneficiaries_table_filter_SelectedIndexChanged;
-            
+
             // Set up message button event handlers
             msg_mailing_list_button.Click += msg_mailing_list_button_Click;
             msg_message_button.Click += msg_message_button_Click;
 
             // Initialize historical report filters
             InitializeHistoricalReportFilters();
-            
+
             // Initialize batch graph filters
             InitializeBatchGraphFilters();
 
@@ -115,7 +115,7 @@ namespace NCSC
         private async void Dashboard_Load(object sender, EventArgs e)
         {
             await LoadBeneficiariesFromFirebase();
-            
+
             // Add sample beneficiary data on dashboard load
             try
             {
@@ -126,7 +126,7 @@ namespace NCSC
                 // Handle any errors silently to avoid disrupting the dashboard load
                 Console.WriteLine($"Error adding sample beneficiary: {ex.Message}");
             }
-            
+
             UpdateBeneficiaryCounts();
             UpdateBirthdaySummaryGraph();
             UpdateMilestoneBirthdayChartByMonth();
@@ -623,7 +623,7 @@ namespace NCSC
                 .Select(b => b.batch_code)
                 .Where(code => !string.IsNullOrEmpty(code))
                 .ToList();
-            
+
             if (batchCodes.Any())
             {
                 var popup = new BenefeciariesBdayMonth(month, batchCodes);
@@ -680,7 +680,7 @@ namespace NCSC
                 // First, get the raw response to see the structure
                 var rawResponse = await FirebaseHelper.GetDataAsync("beneficiaries");
                 Console.WriteLine($"Raw Firebase response: {rawResponse}");
-                
+
                 var beneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
 
                 allBeneficiaries.Clear();
@@ -698,7 +698,7 @@ namespace NCSC
                                 Console.WriteLine($"Skipping invalid beneficiary entry");
                                 continue;
                             }
-                            
+
                             allBeneficiaries.Add(entry);
                             Console.WriteLine($"Added beneficiary: {entry.batch_code} - {entry.name ?? "No name"} - TotalEndorseFromLGUs: {entry.TotalEndorseFromLGUs}");
                             Console.WriteLine($"  Sex: '{entry.sex}' -> Normalized: '{entry.GetNormalizedSex()}'");
@@ -733,19 +733,19 @@ namespace NCSC
             Console.WriteLine($"Selected province: {selectedProvince}, municipality: {selectedMunicipality}, status: {selectedStatus}");
 
             var filtered = allBeneficiaries.AsEnumerable();
-            
+
             // Filter by province
             if (!string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All" && provinceMunicipalities.ContainsKey(selectedProvince))
             {
                 filtered = filtered.Where(b => b.province == selectedProvince);
             }
-            
+
             // Filter by municipality
             if (!string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality")
             {
                 filtered = filtered.Where(b => b.municipality == selectedMunicipality);
             }
-            
+
             // Filter by status
             if (!string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All")
             {
@@ -1229,26 +1229,26 @@ namespace NCSC
         private void InitializeBeneficiariesContextMenu()
         {
             beneficiariesContextMenu = new ContextMenuStrip();
-            
+
             // Add menu items with event handlers
             var assessedItem = beneficiariesContextMenu.Items.Add("Add to: Assessed");
             assessedItem.Click += (s, e) => UpdateBeneficiaryStatus("Assessed");
-            
+
             var scheduleValidationItem = beneficiariesContextMenu.Items.Add("Add to: Schedule Validation");
             scheduleValidationItem.Click += (s, e) => UpdateBeneficiaryStatus("ScheduleValidation");
-            
+
             var totalValidatedItem = beneficiariesContextMenu.Items.Add("Add to: Total Validated");
             totalValidatedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalValidated");
-            
+
             var totalEndorsedItem = beneficiariesContextMenu.Items.Add("Add to: Total Endorsed to NCSC CO");
             totalEndorsedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalEndorsedToNCSCO");
-            
+
             var totalCleanedItem = beneficiariesContextMenu.Items.Add("Add to: Total Cleaned list from NCSC CO");
             totalCleanedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalCleanedListFromNCSCO");
-            
+
             var scheduledPayoutItem = beneficiariesContextMenu.Items.Add("Add to: Scheduled payout");
             scheduledPayoutItem.Click += (s, e) => UpdateBeneficiaryStatus("ScheduledPayout");
-            
+
             var receivedCashGiftItem = beneficiariesContextMenu.Items.Add("Add to: No. of applicants received the Cash Gift");
             receivedCashGiftItem.Click += (s, e) => UpdateBeneficiaryStatus("NumberOfApplicantsReceivedCashGift");
 
@@ -1320,7 +1320,7 @@ namespace NCSC
                 // Find the Firebase key for this beneficiary
                 var allBeneficiariesFromFirebase = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
                 string beneficiaryKey = null;
-                
+
                 if (allBeneficiariesFromFirebase != null)
                 {
                     foreach (var entry in allBeneficiariesFromFirebase)
@@ -1410,17 +1410,17 @@ namespace NCSC
             {
                 // Reload beneficiaries from Firebase
                 await LoadBeneficiariesFromFirebase();
-                
+
                 // Update all counters
                 UpdateBeneficiaryCounts();
-                
+
                 // Update all charts
                 UpdateBirthdaySummaryGraph();
                 UpdateMilestoneBirthdayChartByMonth();
-                
+
                 // Update the randomizer chart
                 randomizer();
-                
+
                 Console.WriteLine("Dashboard data refreshed successfully");
             }
             catch (Exception ex)
@@ -1435,10 +1435,10 @@ namespace NCSC
             {
                 // Reload beneficiaries from Firebase
                 await LoadBeneficiariesFromFirebase();
-                
+
                 // Update counters
                 UpdateBeneficiaryCounts();
-                
+
                 Console.WriteLine("Beneficiaries data refreshed successfully");
             }
             catch (Exception ex)
@@ -1453,11 +1453,11 @@ namespace NCSC
             {
                 // Reload beneficiaries from Firebase for chart data
                 await LoadBeneficiariesFromFirebase();
-                
+
                 // Update all charts in the graph report panel
                 UpdateHistoricalReportCharts();
                 UpdateBatchGraphCharts();
-                
+
                 Console.WriteLine("Graph report data refreshed successfully");
             }
             catch (Exception ex)
@@ -1472,13 +1472,18 @@ namespace NCSC
             {
                 // Reload provincial accounts
                 await LoadProvincialAccountsAsync();
-                
+
                 Console.WriteLine("Accounts data refreshed successfully");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error refreshing accounts data: {ex.Message}");
             }
+        }
+
+        private void label41_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
