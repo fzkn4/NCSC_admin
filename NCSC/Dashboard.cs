@@ -131,16 +131,7 @@ namespace NCSC
             UpdateBirthdaySummaryGraph();
             UpdateMilestoneBirthdayChartByMonth();
             await LoadProvincialAccountsAsync();
-
-            file_history_table.Rows.Clear(); // Clear existing rows if needed
-
-            file_history_table.Rows.Add("batch_zds_01.csv", "Zamboanga del Sur", "Pagadian City", "01/07/2025");
-            file_history_table.Rows.Add("batch_zc_02.csv", "Zamboanga City", "District 1", "03/07/2025");
-            file_history_table.Rows.Add("batch_zdn_03.csv", "Zamboanga del Norte", "Dipolog", "05/07/2025");
-            file_history_table.Rows.Add("batch_isabela_04.csv", "Isabela City", "Binuangan", "06/07/2025");
-            file_history_table.Rows.Add("batch_zs_05.csv", "Zamboanga Sibugay", "Imelda", "07/07/2025");
-            file_history_table.Rows.Add("batch_zc_06.csv", "Zamboanga City", "District 2", "08/07/2025");
-            file_history_table.Rows.Add("batch_zds_07.csv", "Zamboanga del Sur", "Dumingag", "09/07/2025");
+            await LoadFilesFromFirebase();
         }
 
         private void logoutButton_Click(object sender, EventArgs e)
@@ -812,7 +803,7 @@ namespace NCSC
             Console.WriteLine($"Added {addedCount} records to the table");
         }
 
-        private void upload_file_button_Click(object sender, EventArgs e)
+        private async void upload_file_button_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -825,14 +816,10 @@ namespace NCSC
                     string selectedFilePath = openFileDialog.FileName;
                     string fileName = Path.GetFileName(selectedFilePath);
 
-                    // Example: display file details in your guna DataGridView (file_history_table)
-                    string province = "Zamboanga del Sur"; // Replace with actual logic if needed
-                    string municipality = "Municipal 1";   // Replace with actual logic if needed
-                    string dateSubmission = DateTime.Now.ToString("dd/MM/yyyy");
-
-                    file_history_table.Rows.Add(fileName, province, municipality, dateSubmission);
-
                     MessageBox.Show("File uploaded successfully:\n" + fileName, "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Refresh the file history table to show the newly uploaded file
+                    await LoadFilesFromFirebase();
 
                     // You can optionally store it or process the file here
                     // e.g., read Excel/CSV content, upload to database, etc.
@@ -879,6 +866,44 @@ namespace NCSC
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading accounts: " + ex.Message);
+            }
+        }
+
+        private async Task LoadFilesFromFirebase()
+        {
+            try
+            {
+                var files = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
+
+                if (files == null)
+                {
+                    Console.WriteLine("No files data received from Firebase");
+                    return;
+                }
+
+                file_history_table.Rows.Clear();
+
+                foreach (var file in files)
+                {
+                    var fileData = file.Value;
+                    if (fileData != null)
+                    {
+                        file_history_table.Rows.Add(
+                            fileData.GetFileName(),
+                            fileData.province ?? "N/A",
+                            fileData.municipality ?? "N/A",
+                            fileData.GetFormattedUploadDate(),
+                            fileData.total_records.ToString()
+                        );
+                    }
+                }
+
+                Console.WriteLine($"Loaded {files.Count} files from Firebase");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading files from Firebase: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -1453,6 +1478,9 @@ namespace NCSC
             {
                 // Reload beneficiaries from Firebase for chart data
                 await LoadBeneficiariesFromFirebase();
+
+                // Reload files from Firebase for file history table
+                await LoadFilesFromFirebase();
 
                 // Update all charts in the graph report panel
                 UpdateHistoricalReportCharts();
