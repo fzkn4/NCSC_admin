@@ -108,7 +108,7 @@ namespace NCSC
                         && decryptedPassword == enteredPassword)
                     {
                         string userRole = user.role != null ? user.role.ToString() : "user";
-                        Dashboard dashboard = new Dashboard(userRole);
+                        Dashboard dashboard = new Dashboard(userRole, storedUsername);
                         dashboard.Show();
                         this.Hide();
                         return;

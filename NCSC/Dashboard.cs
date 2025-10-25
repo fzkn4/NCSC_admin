@@ -11,6 +11,7 @@ using Guna.Charts.Interfaces;
 using Guna.Charts.WinForms;
 using Guna.UI2.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using OfficeOpenXml;
 
 namespace NCSC
 {
@@ -19,10 +20,16 @@ namespace NCSC
 
         private List<Guna2Button> sidebarButtons;
         private string _userRole;
-        // Constructor for runtime, accepts user role
-        public Dashboard(string userRole)
+        private string _username;
+        // Constructor for runtime, accepts user role and username
+        public Dashboard(string userRole, string username = "")
         {
             _userRole = userRole;
+            _username = username;
+            
+            // Set EPPlus license context
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            
             InitializeComponent();
             InitializeBeneficiariesContextMenu();
             beneficiaries_table.MouseDown += beneficiaries_table_MouseDown;
@@ -808,7 +815,7 @@ namespace NCSC
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Title = "Select a file to upload";
-                openFileDialog.Filter = "Excel Files|*.xls;*.xlsx|CSV Files|*.csv|All Files|*.*";
+                openFileDialog.Filter = "Excel Files|*.xls;*.xlsx|All Files|*.*";
                 openFileDialog.Multiselect = false;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -816,13 +823,66 @@ namespace NCSC
                     string selectedFilePath = openFileDialog.FileName;
                     string fileName = Path.GetFileName(selectedFilePath);
 
-                    MessageBox.Show("File uploaded successfully:\n" + fileName, "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    try
+                    {
+                        // Show loading message
+                        MessageBox.Show("Processing file... Please wait.", "Processing", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    // Refresh the file history table to show the newly uploaded file
-                    await LoadFilesFromFirebase();
+                        // Parse Excel file
+                        var parsedData = await ParseExcelFile(selectedFilePath);
+                        
+                        if (parsedData == null || parsedData.Count == 0)
+                        {
+                            MessageBox.Show("No data found in the Excel file or file could not be parsed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
 
-                    // You can optionally store it or process the file here
-                    // e.g., read Excel/CSV content, upload to database, etc.
+                        // Check for duplicates
+                        var duplicateCheckResult = await CheckForDuplicates(parsedData);
+                        var uniqueRecords = duplicateCheckResult.uniqueRecords;
+                        var duplicateRecords = duplicateCheckResult.duplicateRecords;
+
+                        // Show confirmation dialog
+                        string message = $"File: {fileName}\n";
+                        message += $"Total Records: {parsedData.Count}\n";
+                        message += $"Unique Records: {uniqueRecords.Count}\n";
+                        message += $"Duplicate Records: {duplicateRecords.Count}\n\n";
+                        message += "Do you want to proceed with uploading the unique records?";
+
+                        if (duplicateRecords.Count > 0)
+                        {
+                            message += $"\n\nNote: {duplicateRecords.Count} duplicate records will be skipped.";
+                        }
+
+                        var result = MessageBox.Show(message, "Confirm Upload", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                        if (result == DialogResult.Yes)
+                        {
+                            // Upload unique records to Firebase
+                            await UploadBeneficiariesToFirebase(uniqueRecords, duplicateRecords, fileName);
+                            
+                            // Show success message
+                            string successMessage = $"Upload completed!\n\n";
+                            successMessage += $"✅ Unique records uploaded: {uniqueRecords.Count}\n";
+                            successMessage += $"❌ Duplicate records skipped: {duplicateRecords.Count}\n";
+                            successMessage += $"📋 File: {fileName}";
+
+                            if (duplicateRecords.Count > 0)
+                            {
+                                successMessage += $"\n\n⚠️ Note: {duplicateRecords.Count} duplicate records were found and skipped.";
+                            }
+
+                            MessageBox.Show(successMessage, "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            // Refresh the file history table and beneficiaries data
+                            await LoadFilesFromFirebase();
+                            await LoadBeneficiariesFromFirebase();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error processing file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
@@ -1512,6 +1572,312 @@ namespace NCSC
         private void label41_Click(object sender, EventArgs e)
         {
 
+        }
+
+        // Excel parsing functionality
+        private async Task<List<Beneficiary>> ParseExcelFile(string filePath)
+        {
+            try
+            {
+                using (var package = new OfficeOpenXml.ExcelPackage(new FileInfo(filePath)))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var beneficiaries = new List<Beneficiary>();
+
+                    // Get the number of rows and columns
+                    int rowCount = worksheet.Dimension?.Rows ?? 0;
+                    int colCount = worksheet.Dimension?.Columns ?? 0;
+
+                    if (rowCount <= 1) return beneficiaries; // No data rows
+
+                    // Get headers from first row
+                    var headers = new List<string>();
+                    for (int col = 1; col <= colCount; col++)
+                    {
+                        headers.Add(worksheet.Cells[1, col].Value?.ToString() ?? "");
+                    }
+
+                    // Debug: Log the headers found
+                    Console.WriteLine($"Excel Headers found: {string.Join(", ", headers)}");
+
+                    // Process data rows
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var beneficiary = new Beneficiary();
+                        bool hasData = false;
+
+                        for (int col = 1; col <= colCount; col++)
+                        {
+                            var cellValue = worksheet.Cells[row, col].Value?.ToString() ?? "";
+                            var header = headers[col - 1].ToLower().Trim();
+
+                            if (!string.IsNullOrEmpty(cellValue))
+                            {
+                                hasData = true;
+                            }
+
+                            // Debug: Log the mapping attempt
+                            Console.WriteLine($"Mapping column '{header}' with value '{cellValue}'");
+
+                            // Map Excel columns to Beneficiary properties
+                            switch (header)
+                            {
+                                case "first_name":
+                                case "first name":
+                                case "firstname":
+                                case "given name":
+                                    beneficiary.first_name = cellValue;
+                                    break;
+                                case "middle_name":
+                                case "middle name":
+                                case "middlename":
+                                    beneficiary.middle_name = cellValue;
+                                    break;
+                                case "last_name":
+                                case "last name":
+                                case "lastname":
+                                case "surname":
+                                    beneficiary.last_name = cellValue;
+                                    break;
+                                case "name":
+                                case "full name":
+                                case "fullname":
+                                    beneficiary.name = cellValue;
+                                    break;
+                                case "age":
+                                    if (int.TryParse(cellValue, out int age))
+                                        beneficiary.age = age.ToString();
+                                    break;
+                                case "sex":
+                                case "gender":
+                                    beneficiary.sex = cellValue;
+                                    break;
+                                case "birth_date":
+                                case "birth date":
+                                case "birthdate":
+                                case "date of birth":
+                                case "dob":
+                                    beneficiary.birth_date = cellValue;
+                                    break;
+                                case "barangay":
+                                case "address":
+                                case "location":
+                                    beneficiary.barangay = cellValue;
+                                    break;
+                                case "region":
+                                    beneficiary.region = cellValue;
+                                    break;
+                                case "province":
+                                    beneficiary.province = cellValue;
+                                    break;
+                                case "municipality":
+                                    beneficiary.municipality = cellValue;
+                                    break;
+                                case "ip":
+                                case "indigenous people":
+                                case "ip status":
+                                    beneficiary.ip = cellValue;
+                                    break;
+                                case "pwd":
+                                case "person with disability":
+                                case "pwd status":
+                                case "disability":
+                                case "disabled":
+                                    beneficiary.pwd = cellValue;
+                                    break;
+                            }
+                        }
+
+                        if (hasData)
+                        {
+                            // Set default values
+                            beneficiary.Assessed = false;
+                            beneficiary.NumberOfApplicantsReceivedCashGift = false;
+                            beneficiary.ScheduleValidation = false;
+                            beneficiary.ScheduledPayout = false;
+                            beneficiary.TotalCleanedListFromNCSCO = false;
+                            beneficiary.TotalEndorseFromLGUs = true;
+                            beneficiary.TotalEndorsedToNCSCO = false;
+                            beneficiary.TotalValidated = false;
+
+                            // Generate batch code
+                            beneficiary.batch_code = GenerateBatchCode();
+
+                            // Set validation date
+                            beneficiary.date_validated = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+                            // Set province_municipality_date
+                            if (!string.IsNullOrEmpty(beneficiary.province) && !string.IsNullOrEmpty(beneficiary.municipality))
+                            {
+                                beneficiary.province_municipality_date = $"{beneficiary.province}_{beneficiary.municipality}_{DateTime.Now:yyyy-MM-dd}";
+                            }
+
+                            // Calculate age from birth_date if age is not provided
+                            if (string.IsNullOrEmpty(beneficiary.age) && !string.IsNullOrEmpty(beneficiary.birth_date))
+                            {
+                                beneficiary.age = CalculateAgeFromBirthDate(beneficiary.birth_date);
+                            }
+
+                            // Ensure name is constructed if not provided
+                            if (string.IsNullOrEmpty(beneficiary.name) && 
+                                (!string.IsNullOrEmpty(beneficiary.first_name) || 
+                                 !string.IsNullOrEmpty(beneficiary.middle_name) || 
+                                 !string.IsNullOrEmpty(beneficiary.last_name)))
+                            {
+                                var nameParts = new List<string>();
+                                if (!string.IsNullOrEmpty(beneficiary.first_name)) nameParts.Add(beneficiary.first_name);
+                                if (!string.IsNullOrEmpty(beneficiary.middle_name)) nameParts.Add(beneficiary.middle_name);
+                                if (!string.IsNullOrEmpty(beneficiary.last_name)) nameParts.Add(beneficiary.last_name);
+                                beneficiary.name = string.Join(" ", nameParts);
+                            }
+
+                            beneficiaries.Add(beneficiary);
+                        }
+                    }
+
+                    return beneficiaries;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error parsing Excel file: {ex.Message}");
+            }
+        }
+
+        // Generate batch code for WinForms
+        private string GenerateBatchCode()
+        {
+            // Generate a simple batch code with timestamp
+            var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var random = new Random().Next(1000, 9999);
+            return $"ADMIN-{timestamp}-{random}";
+        }
+
+        // Calculate age from birth date
+        private string CalculateAgeFromBirthDate(string birthDate)
+        {
+            try
+            {
+                if (DateTime.TryParse(birthDate, out DateTime birth))
+                {
+                    var today = DateTime.Today;
+                    var age = today.Year - birth.Year;
+                    
+                    // Adjust if birthday hasn't occurred this year
+                    if (birth.Date > today.AddYears(-age))
+                    {
+                        age--;
+                    }
+                    
+                    return age.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating age from birth date '{birthDate}': {ex.Message}");
+            }
+            
+            return "";
+        }
+
+        // Check for duplicates
+        private async Task<(List<Beneficiary> uniqueRecords, List<Beneficiary> duplicateRecords)> CheckForDuplicates(List<Beneficiary> newRecords)
+        {
+            var uniqueRecords = new List<Beneficiary>();
+            var duplicateRecords = new List<Beneficiary>();
+
+            try
+            {
+                // Get existing beneficiaries from Firebase
+                var existingBeneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
+                
+                if (existingBeneficiaries == null)
+                {
+                    return (newRecords, new List<Beneficiary>());
+                }
+
+                foreach (var newRecord in newRecords)
+                {
+                    bool isDuplicate = false;
+
+                    foreach (var existing in existingBeneficiaries.Values)
+                    {
+                        if (existing != null && IsDuplicateRecord(newRecord, existing))
+                        {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (isDuplicate)
+                    {
+                        duplicateRecords.Add(newRecord);
+                    }
+                    else
+                    {
+                        uniqueRecords.Add(newRecord);
+                    }
+                }
+
+                return (uniqueRecords, duplicateRecords);
+            }
+            catch (Exception ex)
+            {
+                // If error occurs, treat all records as unique to avoid data loss
+                return (newRecords, new List<Beneficiary>());
+            }
+        }
+
+        // Check if two records are duplicates
+        private bool IsDuplicateRecord(Beneficiary record1, Beneficiary record2)
+        {
+            return NormalizeString(record1.birth_date) == NormalizeString(record2.birth_date) &&
+                   NormalizeString(record1.first_name) == NormalizeString(record2.first_name) &&
+                   NormalizeString(record1.middle_name) == NormalizeString(record2.middle_name) &&
+                   NormalizeString(record1.last_name) == NormalizeString(record2.last_name);
+        }
+
+        // Normalize string for comparison
+        private string NormalizeString(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            return value.Trim().ToLower();
+        }
+
+        // Upload beneficiaries to Firebase
+        private async Task UploadBeneficiariesToFirebase(List<Beneficiary> uniqueRecords, List<Beneficiary> duplicateRecords, string fileName)
+        {
+            try
+            {
+                // Upload each unique beneficiary with auto-generated key
+                foreach (var beneficiary in uniqueRecords)
+                {
+                    // Generate unique key for each beneficiary
+                    await FirebaseHelper.PushDataAsync("beneficiaries", beneficiary);
+                }
+
+                // Create file tracking record with proper counts
+                var fileRecord = new FileData
+                {
+                    batch_code = GenerateBatchCode(), // Generate a batch code for the file
+                    file_name = fileName,
+                    province = "Admin Upload", // Since this is admin upload
+                    municipality = "Admin Upload",
+                    province_municipality_date = $"Admin Upload_Admin Upload_{DateTime.Now:yyyy-MM-dd}",
+                    total_records = uniqueRecords.Count + duplicateRecords.Count,
+                    unique_records = uniqueRecords.Count,
+                    duplicate_records = duplicateRecords.Count,
+                    upload_date = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                    uploaded_by = _username ?? "Unknown Admin"
+                };
+
+                // Store file record with auto-generated key
+                await FirebaseHelper.PushDataAsync("files", fileRecord);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error uploading to Firebase: {ex.Message}");
+            }
         }
     }
 }
