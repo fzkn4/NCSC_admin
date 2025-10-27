@@ -7,6 +7,9 @@
     <Compile Update="Benefeciaries_popup.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Beneficiaries_filter_window.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Dashboard.cs">
       <SubType>Form</SubType>
     </Compile>

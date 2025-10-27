@@ -29,6 +29,7 @@ C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\bin\Debug\net8.0-windo
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.csproj.AssemblyReference.cache
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.BenefeciariesBdayMonth.resources
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.Benefeciaries_popup.resources
+C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.Beneficiaries_filter_window.resources
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.Dashboard.resources
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.Form1.resources
 C:\Users\Fzkn4\Music\Fzkn4\ProjectShitshow\NCSC\NCSC\NCSC\obj\Debug\net8.0-windows\NCSC.Properties.Resources.resources
