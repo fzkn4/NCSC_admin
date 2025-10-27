@@ -325,6 +325,12 @@ namespace NCSC
             ToggleMessageButtons(msg_message_button);
         }
 
+        private void beneficiaries_ultimate_filter_button_Click(object sender, EventArgs e)
+        {
+            var filterWindow = new Beneficiaries_filter_window();
+            filterWindow.ShowDialog();
+        }
+
         private void ToggleMessageButtons(Guna.UI2.WinForms.Guna2Button selectedButton)
         {
             // Reset both buttons to default state
