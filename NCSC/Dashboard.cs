@@ -1197,9 +1197,25 @@ namespace NCSC
             graph_report_batch_graph_municipality.Items.Add("All");
             graph_report_batch_graph_municipality.SelectedIndex = 0;
 
+            // Initialize status filter dropdown - add "All" at the beginning
+            graph_report_batch_graph_filter.Items.Clear();
+            graph_report_batch_graph_filter.Items.Add("All");
+            graph_report_batch_graph_filter.Items.Add("Total Endorse from LGUs");
+            graph_report_batch_graph_filter.Items.Add("Assessed");
+            graph_report_batch_graph_filter.Items.Add("Total Validated");
+            graph_report_batch_graph_filter.Items.Add("Total Endorsed to NCSC CO");
+            graph_report_batch_graph_filter.Items.Add("Total Cleaned list from NCSC CO");
+            graph_report_batch_graph_filter.Items.Add("Scheduled payout");
+            graph_report_batch_graph_filter.Items.Add("No. of applicants received the Cash Gift");
+            graph_report_batch_graph_filter.Items.Add("Deceased");
+            graph_report_batch_graph_filter.Items.Add("Unpaid");
+            graph_report_batch_graph_filter.Items.Add("Paid");
+            graph_report_batch_graph_filter.SelectedIndex = 0;
+
             // Set up event handlers for batch graph filters
             graph_report_batch_graph_province.SelectedIndexChanged += graph_report_batch_graph_province_SelectedIndexChanged;
             graph_report_batch_graph_municipality.SelectedIndexChanged += graph_report_batch_graph_municipality_SelectedIndexChanged;
+            graph_report_batch_graph_filter.SelectedIndexChanged += graph_report_batch_graph_filter_SelectedIndexChanged;
         }
 
         private async void graph_report_batch_graph_province_SelectedIndexChanged(object sender, EventArgs e)
@@ -1232,6 +1248,12 @@ namespace NCSC
         }
 
         private async void graph_report_batch_graph_municipality_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Update batch graph charts based on filter selection
+            await UpdateBatchGraphChartsAsync();
+        }
+
+        private async void graph_report_batch_graph_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Update batch graph charts based on filter selection
             await UpdateBatchGraphChartsAsync();
@@ -1707,11 +1729,13 @@ namespace NCSC
                 // Get filter selections
                 string selectedProvince = graph_report_batch_graph_province.SelectedItem?.ToString();
                 string selectedMunicipality = graph_report_batch_graph_municipality.SelectedItem?.ToString();
+                string selectedStatus = graph_report_batch_graph_filter.SelectedItem?.ToString();
                 int currentYear = DateTime.Now.Year;
 
                 // If "All" is selected or filters are empty, show data for all
                 bool filterByProvince = !string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All";
                 bool filterByMunicipality = !string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality";
+                bool filterByStatus = !string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All";
 
                 // Load files from Firebase
                 var allFiles = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
@@ -1741,50 +1765,137 @@ namespace NCSC
                 // Filter by current year
                 filteredFiles = filteredFiles.Where(f => f.upload_year == currentYear);
 
-                // Group by batch number and count beneficiaries per batch
-                var batchData = new Dictionary<int, int>();
-                
-                foreach (var file in filteredFiles)
+                // If status filter is active, we need to count beneficiaries with that status per batch
+                if (filterByStatus)
                 {
-                    if (file.batch_number > 0)
+                    // Load beneficiaries to check their status
+                    var allBeneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
+                    
+                    if (allBeneficiaries == null)
                     {
-                        if (!batchData.ContainsKey(file.batch_number))
-                        {
-                            batchData[file.batch_number] = 0;
-                        }
-                        batchData[file.batch_number] += file.unique_records; // Count unique beneficiaries per batch
+                        graph_report_bar_chart_dataset.DataPoints.Clear();
+                        graph_report_chart.Datasets.Clear();
+                        graph_report_chart.Update();
+                        return;
                     }
+
+                    // Group by batch number and count beneficiaries with the selected status
+                    var batchData = new Dictionary<int, int>();
+                    
+                    foreach (var file in filteredFiles)
+                    {
+                        if (file.batch_number > 0)
+                        {
+                            if (!batchData.ContainsKey(file.batch_number))
+                            {
+                                batchData[file.batch_number] = 0;
+                            }
+                            
+                            // Count beneficiaries in this batch with the selected status
+                            int countWithStatus = 0;
+                            foreach (var beneficiary in allBeneficiaries.Values)
+                            {
+                                if (beneficiary != null && beneficiary.batch_number == file.batch_number)
+                                {
+                                    // Apply province/municipality filter if needed
+                                    bool matchesLocation = true;
+                                    if (filterByProvince && !string.Equals(beneficiary.province?.Trim(), selectedProvince, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        matchesLocation = false;
+                                    }
+                                    if (filterByMunicipality && !string.Equals(beneficiary.municipality?.Trim(), selectedMunicipality, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        matchesLocation = false;
+                                    }
+                                    
+                                    if (matchesLocation && CheckBeneficiaryStatus(beneficiary, selectedStatus))
+                                    {
+                                        countWithStatus++;
+                                    }
+                                }
+                            }
+                            
+                            batchData[file.batch_number] += countWithStatus;
+                        }
+                    }
+
+                    // Sort by batch number
+                    var sortedBatches = batchData.OrderBy(b => b.Key).ToList();
+
+                    // Clear existing chart data
+                    graph_report_bar_chart_dataset.DataPoints.Clear();
+                    graph_report_chart.Datasets.Clear();
+
+                    // If no batches found, show empty chart
+                    if (sortedBatches.Count == 0)
+                    {
+                        graph_report_chart.Update();
+                        return;
+                    }
+
+                    // Calculate total of all batches
+                    int totalBeneficiaries = sortedBatches.Sum(b => b.Value);
+
+                    // Add data points to chart - format batch labels as "Batch 1", "Batch 2", etc.
+                    foreach (var batch in sortedBatches)
+                    {
+                        string batchLabel = $"Batch {batch.Key}";
+                        graph_report_bar_chart_dataset.DataPoints.Add(batchLabel, batch.Value);
+                    }
+
+                    // Add total bar at the end
+                    graph_report_bar_chart_dataset.DataPoints.Add("Total", totalBeneficiaries);
+
+                    // Configure the dataset with status label
+                    graph_report_bar_chart_dataset.Label = $"{selectedStatus} Beneficiaries per Batch";
                 }
-
-                // Sort by batch number
-                var sortedBatches = batchData.OrderBy(b => b.Key).ToList();
-
-                // Clear existing chart data
-                graph_report_bar_chart_dataset.DataPoints.Clear();
-                graph_report_chart.Datasets.Clear();
-
-                // If no batches found, show empty chart
-                if (sortedBatches.Count == 0)
+                else
                 {
-                    graph_report_chart.Update();
-                    return;
+                    // No status filter - use file counts (original behavior)
+                    var batchData = new Dictionary<int, int>();
+                    
+                    foreach (var file in filteredFiles)
+                    {
+                        if (file.batch_number > 0)
+                        {
+                            if (!batchData.ContainsKey(file.batch_number))
+                            {
+                                batchData[file.batch_number] = 0;
+                            }
+                            batchData[file.batch_number] += file.unique_records; // Count unique beneficiaries per batch
+                        }
+                    }
+
+                    // Sort by batch number
+                    var sortedBatches = batchData.OrderBy(b => b.Key).ToList();
+
+                    // Clear existing chart data
+                    graph_report_bar_chart_dataset.DataPoints.Clear();
+                    graph_report_chart.Datasets.Clear();
+
+                    // If no batches found, show empty chart
+                    if (sortedBatches.Count == 0)
+                    {
+                        graph_report_chart.Update();
+                        return;
+                    }
+
+                    // Calculate total of all batches
+                    int totalBeneficiaries = sortedBatches.Sum(b => b.Value);
+
+                    // Add data points to chart - format batch labels as "Batch 1", "Batch 2", etc.
+                    foreach (var batch in sortedBatches)
+                    {
+                        string batchLabel = $"Batch {batch.Key}";
+                        graph_report_bar_chart_dataset.DataPoints.Add(batchLabel, batch.Value);
+                    }
+
+                    // Add total bar at the end
+                    graph_report_bar_chart_dataset.DataPoints.Add("Total", totalBeneficiaries);
+
+                    // Configure the dataset
+                    graph_report_bar_chart_dataset.Label = "Beneficiaries per Batch";
                 }
-
-                // Calculate total of all batches
-                int totalBeneficiaries = sortedBatches.Sum(b => b.Value);
-
-                // Add data points to chart - format batch labels as "Batch 1", "Batch 2", etc.
-                foreach (var batch in sortedBatches)
-                {
-                    string batchLabel = $"Batch {batch.Key}";
-                    graph_report_bar_chart_dataset.DataPoints.Add(batchLabel, batch.Value);
-                }
-
-                // Add total bar at the end
-                graph_report_bar_chart_dataset.DataPoints.Add("Total", totalBeneficiaries);
-
-                // Configure the dataset
-                graph_report_bar_chart_dataset.Label = "Beneficiaries per Batch";
                 
                 // Add dataset to chart
                 graph_report_chart.Datasets.Add(graph_report_bar_chart_dataset);
@@ -1796,6 +1907,39 @@ namespace NCSC
             {
                 Console.WriteLine($"Error updating batch graph charts: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        // Helper method to check if a beneficiary has a specific status
+        private bool CheckBeneficiaryStatus(Beneficiary beneficiary, string status)
+        {
+            if (beneficiary == null || string.IsNullOrEmpty(status))
+                return false;
+
+            switch (status)
+            {
+                case "Total Endorse from LGUs":
+                    return beneficiary.TotalEndorseFromLGUs;
+                case "Assessed":
+                    return beneficiary.Assessed;
+                case "Total Validated":
+                    return beneficiary.TotalValidated;
+                case "Total Endorsed to NCSC CO":
+                    return beneficiary.TotalEndorsedToNCSCO;
+                case "Total Cleaned list from NCSC CO":
+                    return beneficiary.TotalCleanedListFromNCSCO;
+                case "Scheduled payout":
+                    return beneficiary.ScheduledPayout;
+                case "No. of applicants received the Cash Gift":
+                    return beneficiary.NumberOfApplicantsReceivedCashGift;
+                case "Deceased":
+                    return beneficiary.Deceased;
+                case "Unpaid":
+                    return beneficiary.Unpaid;
+                case "Paid":
+                    return beneficiary.Paid;
+                default:
+                    return false;
             }
         }
 
