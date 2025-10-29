@@ -680,6 +680,8 @@ namespace NCSC
             beneficiaries_table.Columns.Add("date_validated_col", "Date Validated");
             beneficiaries_table.Columns.Add("pwd_col", "PWD");
             beneficiaries_table.Columns.Add("ip_col", "IP");
+            beneficiaries_table.Columns.Add("paid_status", "Paid Status");
+            beneficiaries_table.Columns.Add("deceased_status", "Deceased Status");
 
             try
             {
@@ -808,6 +810,16 @@ namespace NCSC
             int addedCount = 0;
             foreach (var entry in filtered)
             {
+                // Determine paid status based on Paid and Unpaid boolean attributes
+                string paidStatus = "Not Paid";
+                if (entry.Paid)
+                    paidStatus = "Paid";
+                else if (entry.Unpaid)
+                    paidStatus = "Unpaid";
+
+                // Determine deceased status based on Deceased boolean attribute
+                string deceasedStatus = entry.Deceased ? "Deceased" : "Alive";
+
                 beneficiaries_table.Rows.Add(
                     entry.batch_code,
                     entry.age,
@@ -819,11 +831,37 @@ namespace NCSC
                     entry.barangay,
                     entry.GetNormalizedDateValidated(),
                     entry.pwd,
-                    entry.ip
+                    entry.ip,
+                    paidStatus,
+                    deceasedStatus
                 );
                 addedCount++;
             }
+            // Apply deceased highlighting after populating rows
+            ApplyDeceasedRowHighlighting();
             Console.WriteLine($"Added {addedCount} records to the table");
+        }
+
+        // Highlight rows for deceased beneficiaries
+        private void ApplyDeceasedRowHighlighting()
+        {
+            try
+            {
+                var deceasedColor = ColorTranslator.FromHtml("#E06B80");
+                foreach (DataGridViewRow row in beneficiaries_table.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    var status = row.Cells["deceased_status"]?.Value?.ToString() ?? string.Empty;
+                    if (status.Equals("Deceased", StringComparison.OrdinalIgnoreCase))
+                    {
+                        row.DefaultCellStyle.BackColor = deceasedColor;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error applying deceased highlighting: {ex.Message}");
+            }
         }
 
         private async void upload_file_button_Click(object sender, EventArgs e)

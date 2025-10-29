@@ -411,17 +411,6 @@
             label3 = new Label();
             guna2Panel21 = new Guna.UI2.WinForms.Guna2Panel();
             beneficiaries_table = new Guna.UI2.WinForms.Guna2DataGridView();
-            batch_code_col = new DataGridViewTextBoxColumn();
-            age_col = new DataGridViewTextBoxColumn();
-            birth_date_col = new DataGridViewTextBoxColumn();
-            sex_col = new DataGridViewTextBoxColumn();
-            region_col = new DataGridViewTextBoxColumn();
-            province_col = new DataGridViewTextBoxColumn();
-            minicipalities_col = new DataGridViewTextBoxColumn();
-            barangay_col = new DataGridViewTextBoxColumn();
-            date_validated_col = new DataGridViewTextBoxColumn();
-            pwd_col = new DataGridViewTextBoxColumn();
-            ip_col = new DataGridViewTextBoxColumn();
             graphReportPanel = new Guna.UI2.WinForms.Guna2Panel();
             guna2Panel27 = new Guna.UI2.WinForms.Guna2Panel();
             graph_report_pie_chart = new Guna.Charts.WinForms.GunaChart();
@@ -461,6 +450,19 @@
             account_province = new DataGridViewTextBoxColumn();
             accounts_municipality = new DataGridViewTextBoxColumn();
             account_status = new DataGridViewTextBoxColumn();
+            batch_code_col = new DataGridViewTextBoxColumn();
+            age_col = new DataGridViewTextBoxColumn();
+            birth_date_col = new DataGridViewTextBoxColumn();
+            sex_col = new DataGridViewTextBoxColumn();
+            region_col = new DataGridViewTextBoxColumn();
+            province_col = new DataGridViewTextBoxColumn();
+            minicipalities_col = new DataGridViewTextBoxColumn();
+            barangay_col = new DataGridViewTextBoxColumn();
+            date_validated_col = new DataGridViewTextBoxColumn();
+            pwd_col = new DataGridViewTextBoxColumn();
+            ip_col = new DataGridViewTextBoxColumn();
+            paid_status = new DataGridViewTextBoxColumn();
+            deceased_status = new DataGridViewTextBoxColumn();
             guna2Panel1.SuspendLayout();
             dashboardPanel.SuspendLayout();
             guna2Panel14.SuspendLayout();
@@ -2729,7 +2731,7 @@
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
             beneficiaries_table.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             beneficiaries_table.ColumnHeadersHeight = 32;
-            beneficiaries_table.Columns.AddRange(new DataGridViewColumn[] { batch_code_col, age_col, birth_date_col, sex_col, region_col, province_col, minicipalities_col, barangay_col, date_validated_col, pwd_col, ip_col });
+            beneficiaries_table.Columns.AddRange(new DataGridViewColumn[] { batch_code_col, age_col, birth_date_col, sex_col, region_col, province_col, minicipalities_col, barangay_col, date_validated_col, pwd_col, ip_col, paid_status, deceased_status });
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -2777,72 +2779,6 @@
             beneficiaries_table.ThemeStyle.RowsStyle.SelectionForeColor = Color.FromArgb(71, 69, 94);
             beneficiaries_table.CellContentClick += beneficiaries_table_CellContentClick;
             beneficiaries_table.CellDoubleClick += beneficiaries_table_CellDoubleClick;
-            // 
-            // batch_code_col
-            // 
-            batch_code_col.HeaderText = "Batch Code";
-            batch_code_col.Name = "batch_code_col";
-            batch_code_col.ReadOnly = true;
-            // 
-            // age_col
-            // 
-            age_col.HeaderText = "Age";
-            age_col.Name = "age_col";
-            age_col.ReadOnly = true;
-            // 
-            // birth_date_col
-            // 
-            birth_date_col.HeaderText = "Birthdate";
-            birth_date_col.Name = "birth_date_col";
-            birth_date_col.ReadOnly = true;
-            // 
-            // sex_col
-            // 
-            sex_col.HeaderText = "Sex";
-            sex_col.Name = "sex_col";
-            sex_col.ReadOnly = true;
-            // 
-            // region_col
-            // 
-            region_col.HeaderText = "Region";
-            region_col.Name = "region_col";
-            region_col.ReadOnly = true;
-            // 
-            // province_col
-            // 
-            province_col.HeaderText = "Province";
-            province_col.Name = "province_col";
-            province_col.ReadOnly = true;
-            // 
-            // minicipalities_col
-            // 
-            minicipalities_col.HeaderText = "Municipalities";
-            minicipalities_col.Name = "minicipalities_col";
-            minicipalities_col.ReadOnly = true;
-            // 
-            // barangay_col
-            // 
-            barangay_col.HeaderText = "Barangay";
-            barangay_col.Name = "barangay_col";
-            barangay_col.ReadOnly = true;
-            // 
-            // date_validated_col
-            // 
-            date_validated_col.HeaderText = "Date Validated";
-            date_validated_col.Name = "date_validated_col";
-            date_validated_col.ReadOnly = true;
-            // 
-            // pwd_col
-            // 
-            pwd_col.HeaderText = "PWD";
-            pwd_col.Name = "pwd_col";
-            pwd_col.ReadOnly = true;
-            // 
-            // ip_col
-            // 
-            ip_col.HeaderText = "IP";
-            ip_col.Name = "ip_col";
-            ip_col.ReadOnly = true;
             // 
             // graphReportPanel
             // 
@@ -3050,7 +2986,6 @@
             graph_report_historical_municipality_filter.Name = "graph_report_historical_municipality_filter";
             graph_report_historical_municipality_filter.ShadowDecoration.CustomizableEdges = customizableEdges142;
             graph_report_historical_municipality_filter.Size = new Size(213, 34);
-            graph_report_historical_municipality_filter.StartIndex = 0;
             graph_report_historical_municipality_filter.TabIndex = 16;
             // 
             // graph_report_historical_province_filter
@@ -3074,7 +3009,6 @@
             graph_report_historical_province_filter.Name = "graph_report_historical_province_filter";
             graph_report_historical_province_filter.ShadowDecoration.CustomizableEdges = customizableEdges144;
             graph_report_historical_province_filter.Size = new Size(213, 34);
-            graph_report_historical_province_filter.StartIndex = 0;
             graph_report_historical_province_filter.TabIndex = 15;
             // 
             // guna2Panel25
@@ -3185,7 +3119,6 @@
             graph_report_batch_graph_province.Name = "graph_report_batch_graph_province";
             graph_report_batch_graph_province.ShadowDecoration.CustomizableEdges = customizableEdges150;
             graph_report_batch_graph_province.Size = new Size(213, 34);
-            graph_report_batch_graph_province.StartIndex = 0;
             graph_report_batch_graph_province.TabIndex = 13;
             // 
             // graph_report_batch_graph_filter
@@ -3236,7 +3169,6 @@
             graph_report_batch_graph_municipality.Name = "graph_report_batch_graph_municipality";
             graph_report_batch_graph_municipality.ShadowDecoration.CustomizableEdges = customizableEdges154;
             graph_report_batch_graph_municipality.Size = new Size(213, 34);
-            graph_report_batch_graph_municipality.StartIndex = 0;
             graph_report_batch_graph_municipality.TabIndex = 11;
             // 
             // label5
@@ -3517,6 +3449,84 @@
             account_status.HeaderText = "Status";
             account_status.Name = "account_status";
             // 
+            // batch_code_col
+            // 
+            batch_code_col.HeaderText = "Batch Code";
+            batch_code_col.Name = "batch_code_col";
+            batch_code_col.ReadOnly = true;
+            // 
+            // age_col
+            // 
+            age_col.HeaderText = "Age";
+            age_col.Name = "age_col";
+            age_col.ReadOnly = true;
+            // 
+            // birth_date_col
+            // 
+            birth_date_col.HeaderText = "Birthdate";
+            birth_date_col.Name = "birth_date_col";
+            birth_date_col.ReadOnly = true;
+            // 
+            // sex_col
+            // 
+            sex_col.HeaderText = "Sex";
+            sex_col.Name = "sex_col";
+            sex_col.ReadOnly = true;
+            // 
+            // region_col
+            // 
+            region_col.HeaderText = "Region";
+            region_col.Name = "region_col";
+            region_col.ReadOnly = true;
+            // 
+            // province_col
+            // 
+            province_col.HeaderText = "Province";
+            province_col.Name = "province_col";
+            province_col.ReadOnly = true;
+            // 
+            // minicipalities_col
+            // 
+            minicipalities_col.HeaderText = "Municipalities";
+            minicipalities_col.Name = "minicipalities_col";
+            minicipalities_col.ReadOnly = true;
+            // 
+            // barangay_col
+            // 
+            barangay_col.HeaderText = "Barangay";
+            barangay_col.Name = "barangay_col";
+            barangay_col.ReadOnly = true;
+            // 
+            // date_validated_col
+            // 
+            date_validated_col.HeaderText = "Date Validated";
+            date_validated_col.Name = "date_validated_col";
+            date_validated_col.ReadOnly = true;
+            // 
+            // pwd_col
+            // 
+            pwd_col.HeaderText = "PWD";
+            pwd_col.Name = "pwd_col";
+            pwd_col.ReadOnly = true;
+            // 
+            // ip_col
+            // 
+            ip_col.HeaderText = "IP";
+            ip_col.Name = "ip_col";
+            ip_col.ReadOnly = true;
+            // 
+            // paid_status
+            // 
+            paid_status.HeaderText = "Paid";
+            paid_status.Name = "paid_status";
+            paid_status.ReadOnly = true;
+            // 
+            // deceased_status
+            // 
+            deceased_status.HeaderText = "Deaceased";
+            deceased_status.Name = "deceased_status";
+            deceased_status.ReadOnly = true;
+            // 
             // Dashboard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -3703,17 +3713,6 @@
         private Guna.UI2.WinForms.Guna2ComboBox beneficiaries_table_filter;
         private Guna.UI2.WinForms.Guna2Panel guna2Panel21;
         private Guna.UI2.WinForms.Guna2DataGridView beneficiaries_table;
-        private DataGridViewTextBoxColumn batch_code_col;
-        private DataGridViewTextBoxColumn age_col;
-        private DataGridViewTextBoxColumn birth_date_col;
-        private DataGridViewTextBoxColumn sex_col;
-        private DataGridViewTextBoxColumn region_col;
-        private DataGridViewTextBoxColumn province_col;
-        private DataGridViewTextBoxColumn minicipalities_col;
-        private DataGridViewTextBoxColumn barangay_col;
-        private DataGridViewTextBoxColumn date_validated_col;
-        private DataGridViewTextBoxColumn pwd_col;
-        private DataGridViewTextBoxColumn ip_col;
         private Guna.UI2.WinForms.Guna2Panel guna2Panel22;
         private Guna.UI2.WinForms.Guna2Button msg_mailing_list_button;
         private Guna.UI2.WinForms.Guna2Button msg_message_button;
@@ -3793,5 +3792,18 @@
         private Guna.Charts.WinForms.GunaChart msg_pie_chart;
         private Guna.Charts.WinForms.GunaDoughnutDataset msg_doughnut_dataset;
         private Guna.UI2.WinForms.Guna2Button beneficiaries_ultimate_filter_button;
+        private DataGridViewTextBoxColumn batch_code_col;
+        private DataGridViewTextBoxColumn age_col;
+        private DataGridViewTextBoxColumn birth_date_col;
+        private DataGridViewTextBoxColumn sex_col;
+        private DataGridViewTextBoxColumn region_col;
+        private DataGridViewTextBoxColumn province_col;
+        private DataGridViewTextBoxColumn minicipalities_col;
+        private DataGridViewTextBoxColumn barangay_col;
+        private DataGridViewTextBoxColumn date_validated_col;
+        private DataGridViewTextBoxColumn pwd_col;
+        private DataGridViewTextBoxColumn ip_col;
+        private DataGridViewTextBoxColumn paid_status;
+        private DataGridViewTextBoxColumn deceased_status;
     }
 }
