@@ -7,12 +7,12 @@
       "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\beneficiaries_filter_window.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\beneficiaries_filter_window.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\benefeciaries_popup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\benefeciaries_popup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\ncsc\\beneficiaries_filter_window.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|solutionrelative:ncsc\\beneficiaries_filter_window.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{031DE6FC-8A1D-4C0D-BB87-904AF8C668A6}|NCSC\\NCSC.csproj|c:\\users\\fzkn4\\music\\fzkn4\\projectshitshow\\ncsc\\ncsc\\ncsc\\dashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -100,27 +100,25 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Beneficiaries_filter_window.cs [Design]",
               "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Beneficiaries_filter_window.cs",
               "RelativeDocumentMoniker": "NCSC\\Beneficiaries_filter_window.cs",
               "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Beneficiaries_filter_window.cs [Design]",
               "RelativeToolTip": "NCSC\\Beneficiaries_filter_window.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-27T01:00:58.598Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2025-10-27T01:00:58.598Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Benefeciaries_popup.cs [Design]",
               "DocumentMoniker": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.cs",
               "RelativeDocumentMoniker": "NCSC\\Benefeciaries_popup.cs",
               "ToolTip": "C:\\Users\\Fzkn4\\Music\\Fzkn4\\ProjectShitshow\\NCSC\\NCSC\\NCSC\\Benefeciaries_popup.cs [Design]",
               "RelativeToolTip": "NCSC\\Benefeciaries_popup.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-27T00:14:36.226Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2025-10-27T00:14:36.226Z"
             },
             {
               "$type": "Document",
@@ -144,8 +142,7 @@
               "RelativeToolTip": "NCSC\\Benefeciaries_popup.Designer.cs",
               "ViewState": "AgIAAHUAAAAAAAAAAIAwwIwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-27T01:32:05.708Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-27T01:32:05.708Z"
             }
           ]
         }
