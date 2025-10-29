@@ -1169,7 +1169,7 @@ namespace NCSC
 
         private void graph_report_historical_municipality_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // TODO: Add method to update historical report charts based on filter selection
+            // TODO: Add method to update historical report charts based on filter selectionq
             UpdateHistoricalReportCharts();
         }
 
@@ -1202,7 +1202,7 @@ namespace NCSC
             graph_report_batch_graph_municipality.SelectedIndexChanged += graph_report_batch_graph_municipality_SelectedIndexChanged;
         }
 
-        private void graph_report_batch_graph_province_SelectedIndexChanged(object sender, EventArgs e)
+        private async void graph_report_batch_graph_province_SelectedIndexChanged(object sender, EventArgs e)
         {
             graph_report_batch_graph_municipality.Items.Clear();
             string selectedProvince = graph_report_batch_graph_province.SelectedItem?.ToString();
@@ -1227,21 +1227,21 @@ namespace NCSC
                 graph_report_batch_graph_municipality.Items.Add("All");
                 graph_report_batch_graph_municipality.SelectedIndex = 0;
             }
-            // TODO: Add method to update batch graph charts based on filter selection
-            UpdateBatchGraphCharts();
+            // Update batch graph charts based on filter selection
+            await UpdateBatchGraphChartsAsync();
         }
 
-        private void graph_report_batch_graph_municipality_SelectedIndexChanged(object sender, EventArgs e)
+        private async void graph_report_batch_graph_municipality_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // TODO: Add method to update batch graph charts based on filter selection
-            UpdateBatchGraphCharts();
+            // Update batch graph charts based on filter selection
+            await UpdateBatchGraphChartsAsync();
         }
 
+        // Synchronous wrapper for backward compatibility - redirects to async version
         private void UpdateBatchGraphCharts()
         {
-            // This method will be implemented to update the batch graph charts
-            // based on the selected province and municipality filters
-            // For now, it's a placeholder that can be expanded later
+            // Call the async version - use GetAwaiter().GetResult() for synchronous call
+            UpdateBatchGraphChartsAsync().GetAwaiter().GetResult();
         }
 
         private void beneficiaries_table_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -1689,13 +1689,113 @@ namespace NCSC
 
                 // Update all charts in the graph report panel
                 UpdateHistoricalReportCharts();
-                UpdateBatchGraphCharts();
+                await UpdateBatchGraphChartsAsync();
 
                 Console.WriteLine("Graph report data refreshed successfully");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error refreshing graph report data: {ex.Message}");
+            }
+        }
+
+        // Async version for RefreshGraphReportData
+        private async Task UpdateBatchGraphChartsAsync()
+        {
+            try
+            {
+                // Get filter selections
+                string selectedProvince = graph_report_batch_graph_province.SelectedItem?.ToString();
+                string selectedMunicipality = graph_report_batch_graph_municipality.SelectedItem?.ToString();
+                int currentYear = DateTime.Now.Year;
+
+                // If "All" is selected or filters are empty, show data for all
+                bool filterByProvince = !string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All";
+                bool filterByMunicipality = !string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality";
+
+                // Load files from Firebase
+                var allFiles = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
+                
+                if (allFiles == null)
+                {
+                    // Clear chart if no data
+                    graph_report_bar_chart_dataset.DataPoints.Clear();
+                    graph_report_chart.Datasets.Clear();
+                    graph_report_chart.Update();
+                    return;
+                }
+
+                // Filter files based on selections
+                var filteredFiles = allFiles.Values.Where(f => f != null).AsEnumerable();
+                
+                if (filterByProvince)
+                {
+                    filteredFiles = filteredFiles.Where(f => f.province == selectedProvince);
+                }
+                
+                if (filterByMunicipality)
+                {
+                    filteredFiles = filteredFiles.Where(f => f.municipality == selectedMunicipality);
+                }
+
+                // Filter by current year
+                filteredFiles = filteredFiles.Where(f => f.upload_year == currentYear);
+
+                // Group by batch number and count beneficiaries per batch
+                var batchData = new Dictionary<int, int>();
+                
+                foreach (var file in filteredFiles)
+                {
+                    if (file.batch_number > 0)
+                    {
+                        if (!batchData.ContainsKey(file.batch_number))
+                        {
+                            batchData[file.batch_number] = 0;
+                        }
+                        batchData[file.batch_number] += file.unique_records; // Count unique beneficiaries per batch
+                    }
+                }
+
+                // Sort by batch number
+                var sortedBatches = batchData.OrderBy(b => b.Key).ToList();
+
+                // Clear existing chart data
+                graph_report_bar_chart_dataset.DataPoints.Clear();
+                graph_report_chart.Datasets.Clear();
+
+                // If no batches found, show empty chart
+                if (sortedBatches.Count == 0)
+                {
+                    graph_report_chart.Update();
+                    return;
+                }
+
+                // Calculate total of all batches
+                int totalBeneficiaries = sortedBatches.Sum(b => b.Value);
+
+                // Add data points to chart - format batch labels as "Batch 1", "Batch 2", etc.
+                foreach (var batch in sortedBatches)
+                {
+                    string batchLabel = $"Batch {batch.Key}";
+                    graph_report_bar_chart_dataset.DataPoints.Add(batchLabel, batch.Value);
+                }
+
+                // Add total bar at the end
+                graph_report_bar_chart_dataset.DataPoints.Add("Total", totalBeneficiaries);
+
+                // Configure the dataset
+                graph_report_bar_chart_dataset.Label = "Beneficiaries per Batch";
+                
+                // Add dataset to chart
+                graph_report_chart.Datasets.Add(graph_report_bar_chart_dataset);
+                
+                // Update the chart
+                graph_report_chart.Update();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating batch graph charts: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -1991,14 +2091,138 @@ namespace NCSC
             return value.Trim().ToLower();
         }
 
+        // Get the next batch number for a province/municipality/year combination
+        private async Task<int> GetNextBatchNumber(string province, string municipality, int year)
+        {
+            try
+            {
+                // Normalize province and municipality for comparison (trim and ignore case)
+                string normalizedProvince = (province ?? "").Trim();
+                string normalizedMunicipality = (municipality ?? "").Trim();
+
+                // Get all files from Firebase
+                var allFiles = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
+                
+                if (allFiles == null || allFiles.Count == 0)
+                {
+                    Console.WriteLine($"GetNextBatchNumber: No files found, returning batch 1 for {normalizedProvince}/{normalizedMunicipality}/{year}");
+                    return 1; // First batch if no files exist
+                }
+
+                // Find the highest batch number for this province/municipality/year
+                int maxBatchNumber = 0;
+                int matchingFilesCount = 0;
+                bool hasFilesWithZeroBatch = false;
+                
+                foreach (var file in allFiles.Values)
+                {
+                    if (file != null)
+                    {
+                        // Normalize file's province and municipality for comparison
+                        string fileProvince = (file.province ?? "").Trim();
+                        string fileMunicipality = (file.municipality ?? "").Trim();
+                        
+                        // Case-insensitive comparison
+                        if (string.Equals(fileProvince, normalizedProvince, StringComparison.OrdinalIgnoreCase) && 
+                            string.Equals(fileMunicipality, normalizedMunicipality, StringComparison.OrdinalIgnoreCase) &&
+                            file.upload_year == year)
+                        {
+                            matchingFilesCount++;
+                            
+                            // Count files with batch_number = 0 (files uploaded before batch tracking was added)
+                            if (file.batch_number == 0)
+                            {
+                                hasFilesWithZeroBatch = true;
+                            }
+                            else if (file.batch_number > maxBatchNumber)
+                            {
+                                maxBatchNumber = file.batch_number;
+                            }
+                        }
+                    }
+                }
+                
+                // If we found files with batch_number = 0, treat them as batch 1
+                // So if we have files with batch_number = 0, the next batch should be 2
+                if (hasFilesWithZeroBatch && maxBatchNumber == 0)
+                {
+                    maxBatchNumber = 1; // Treat existing files with 0 as batch 1
+                }
+
+                int nextBatchNumber = maxBatchNumber + 1;
+                Console.WriteLine($"GetNextBatchNumber: Found {matchingFilesCount} matching files for {normalizedProvince}/{normalizedMunicipality}/{year}. Max batch: {maxBatchNumber}, Next batch: {nextBatchNumber}");
+
+                return nextBatchNumber;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating batch number: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return 1; // Default to 1 on error
+            }
+        }
+
+        // Extract province and municipality from beneficiaries (using most common or first valid value)
+        private (string province, string municipality) ExtractProvinceMunicipality(List<Beneficiary> beneficiaries)
+        {
+            if (beneficiaries == null || beneficiaries.Count == 0)
+            {
+                return ("Admin Upload", "Admin Upload");
+            }
+
+            // Get province - use the most common province, or first valid one (normalized)
+            var validProvinces = beneficiaries
+                .Where(b => !string.IsNullOrWhiteSpace(b.province))
+                .Select(b => b.province.Trim())
+                .ToList();
+            
+            string province = validProvinces.Any() 
+                ? validProvinces.GroupBy(p => p, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(g => g.Count())
+                    .First().Key
+                : "Admin Upload";
+
+            // Get municipality - use the most common municipality for the selected province, or first valid one (normalized)
+            var validMunicipalities = beneficiaries
+                .Where(b => !string.IsNullOrWhiteSpace(b.municipality) && 
+                           string.Equals((b.province ?? "").Trim(), province, StringComparison.OrdinalIgnoreCase))
+                .Select(b => b.municipality.Trim())
+                .ToList();
+            
+            string municipality = validMunicipalities.Any()
+                ? validMunicipalities.GroupBy(m => m, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(g => g.Count())
+                    .First().Key
+                : (beneficiaries.FirstOrDefault(b => !string.IsNullOrWhiteSpace(b.municipality))?.municipality?.Trim() ?? "Admin Upload");
+
+            Console.WriteLine($"ExtractProvinceMunicipality: Extracted province='{province}', municipality='{municipality}' from {beneficiaries.Count} beneficiaries");
+
+            return (province, municipality);
+        }
+
         // Upload beneficiaries to Firebase
         private async Task UploadBeneficiariesToFirebase(List<Beneficiary> uniqueRecords, List<Beneficiary> duplicateRecords, string fileName)
         {
             try
             {
-                // Upload each unique beneficiary with auto-generated key
+                // Extract province and municipality from the records
+                var (province, municipality) = ExtractProvinceMunicipality(uniqueRecords);
+                int currentYear = DateTime.Now.Year;
+
+                Console.WriteLine($"UploadBeneficiariesToFirebase: Starting upload for {fileName}");
+                Console.WriteLine($"UploadBeneficiariesToFirebase: Extracted province='{province}', municipality='{municipality}', year={currentYear}");
+
+                // Get the next batch number for this province/municipality/year
+                int batchNumber = await GetNextBatchNumber(province, municipality, currentYear);
+                
+                Console.WriteLine($"UploadBeneficiariesToFirebase: Assigned batch number {batchNumber} for {uniqueRecords.Count} beneficiaries");
+
+                // Upload each unique beneficiary with auto-generated key and assign batch number
                 foreach (var beneficiary in uniqueRecords)
                 {
+                    // Assign batch number to beneficiary
+                    beneficiary.batch_number = batchNumber;
+                    
                     // Generate unique key for each beneficiary
                     await FirebaseHelper.PushDataAsync("beneficiaries", beneficiary);
                 }
@@ -2008,14 +2232,16 @@ namespace NCSC
                 {
                     batch_code = GenerateBatchCode(), // Generate a batch code for the file
                     file_name = fileName,
-                    province = "Admin Upload", // Since this is admin upload
-                    municipality = "Admin Upload",
-                    province_municipality_date = $"Admin Upload_Admin Upload_{DateTime.Now:yyyy-MM-dd}",
+                    province = province,
+                    municipality = municipality,
+                    province_municipality_date = $"{province}_{municipality}_{DateTime.Now:yyyy-MM-dd}",
                     total_records = uniqueRecords.Count + duplicateRecords.Count,
                     unique_records = uniqueRecords.Count,
                     duplicate_records = duplicateRecords.Count,
                     upload_date = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                    uploaded_by = _username ?? "Unknown Admin"
+                    uploaded_by = _username ?? "Unknown Admin",
+                    batch_number = batchNumber,
+                    upload_year = currentYear
                 };
 
                 // Store file record with auto-generated key

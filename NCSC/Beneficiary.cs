@@ -18,6 +18,7 @@
     public string middle_name { get; set; }
     public string last_name { get; set; }
     public string province_municipality_date { get; set; }
+    public int batch_number { get; set; }
     
     // New boolean fields
     public bool TotalEndorseFromLGUs { get; set; } = true; // Default to true

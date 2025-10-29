@@ -14,6 +14,8 @@ namespace NCSC
         public string upload_date { get; set; }
         public string file_name { get; set; }
         public string uploaded_by { get; set; }
+        public int batch_number { get; set; }
+        public int upload_year { get; set; }
 
         // Helper method to format the upload date for display
         public string GetFormattedUploadDate()
