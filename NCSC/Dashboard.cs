@@ -1370,6 +1370,9 @@ namespace NCSC
             beneficiariesContextMenu = new ContextMenuStrip();
 
             // Add menu items with event handlers
+            var totalEndorseFromLGUsItem = beneficiariesContextMenu.Items.Add("Add to: Total Endorse from LGUs");
+            totalEndorseFromLGUsItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalEndorseFromLGUs");
+
             var assessedItem = beneficiariesContextMenu.Items.Add("Add to: Assessed");
             assessedItem.Click += (s, e) => UpdateBeneficiaryStatus("Assessed");
 
@@ -1415,129 +1418,199 @@ namespace NCSC
 
             try
             {
-                // Get the selected row
-                var selectedRow = beneficiaries_table.SelectedRows[0];
-                string batchCode = selectedRow.Cells["batch_code_col"].Value?.ToString();
-
-                if (string.IsNullOrEmpty(batchCode))
+                // Build a set of selected batch codes (trimmed to handle whitespace issues)
+                var selectedBatchCodes = new List<string>();
+                foreach (DataGridViewRow row in beneficiaries_table.SelectedRows)
                 {
-                    MessageBox.Show("Invalid batch code.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (row.IsNewRow) continue;
+                    var code = row.Cells["batch_code_col"].Value?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(code)) selectedBatchCodes.Add(code);
+                }
+
+                if (selectedBatchCodes.Count == 0)
+                {
+                    MessageBox.Show("Invalid selection.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                // Find the beneficiary in the allBeneficiaries list
-                var beneficiary = allBeneficiaries.FirstOrDefault(b => b.batch_code == batchCode);
-                if (beneficiary == null)
-                {
-                    MessageBox.Show("Beneficiary not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Update the appropriate status field
-                switch (statusField)
-                {
-                    case "Assessed":
-                        beneficiary.Assessed = true;
-                        break;
-                    case "TotalValidated":
-                        beneficiary.TotalValidated = true;
-                        break;
-                    case "TotalEndorsedToNCSCO":
-                        beneficiary.TotalEndorsedToNCSCO = true;
-                        break;
-                    case "TotalCleanedListFromNCSCO":
-                        beneficiary.TotalCleanedListFromNCSCO = true;
-                        break;
-                    case "ScheduledPayout":
-                        beneficiary.ScheduledPayout = true;
-                        break;
-                    case "NumberOfApplicantsReceivedCashGift":
-                        beneficiary.NumberOfApplicantsReceivedCashGift = true;
-                        break;
-                    case "Deceased":
-                        beneficiary.Deceased = true;
-                        break;
-                    case "Unpaid":
-                        beneficiary.Unpaid = true;
-                        break;
-                    case "Paid":
-                        beneficiary.Paid = true;
-                        break;
-                    default:
-                        MessageBox.Show("Invalid status field.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                }
-
-                // Find the Firebase key for this beneficiary
+                // Fetch all beneficiaries once to map batch_code -> key
                 var allBeneficiariesFromFirebase = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
-                string beneficiaryKey = null;
-
-                if (allBeneficiariesFromFirebase != null)
+                if (allBeneficiariesFromFirebase == null)
                 {
-                    foreach (var entry in allBeneficiariesFromFirebase)
+                    MessageBox.Show("No beneficiaries found in storage.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Create mapping with trimmed batch codes to handle whitespace issues
+                var batchCodeToKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var batchCodeToBeneficiary = new Dictionary<string, Beneficiary>(StringComparer.OrdinalIgnoreCase);
+                
+                foreach (var entry in allBeneficiariesFromFirebase)
+                {
+                    var val = entry.Value;
+                    if (val == null) continue;
+                    
+                    var trimmedBatchCode = val.batch_code?.Trim();
+                    if (!string.IsNullOrEmpty(trimmedBatchCode))
                     {
-                        if (entry.Value.batch_code == batchCode)
+                        // If duplicate batch code exists, log it but use the first one found
+                        if (!batchCodeToKey.ContainsKey(trimmedBatchCode))
                         {
-                            beneficiaryKey = entry.Key;
-                            break;
+                            batchCodeToKey[trimmedBatchCode] = entry.Key;
+                            batchCodeToBeneficiary[trimmedBatchCode] = val;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: Duplicate batch code found: {trimmedBatchCode}");
                         }
                     }
                 }
 
-                if (string.IsNullOrEmpty(beneficiaryKey))
-                {
-                    MessageBox.Show("Beneficiary key not found in Firebase.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                int updatedCount = 0;
+                var failedBatchCodes = new List<string>();
+                var failureReasons = new List<string>();
 
-                // Update the beneficiary in Firebase
-                await FirebaseHelper.SetDataAsync($"beneficiaries/{beneficiaryKey}", beneficiary);
-
-                // Update the local list
-                var localBeneficiary = allBeneficiaries.FirstOrDefault(b => b.batch_code == batchCode);
-                if (localBeneficiary != null)
+                foreach (var code in selectedBatchCodes)
                 {
+                    // Try to find the batch code in Firebase (case-insensitive, trimmed)
+                    if (!batchCodeToKey.TryGetValue(code, out var key))
+                    {
+                        failedBatchCodes.Add(code);
+                        failureReasons.Add("Batch code not found in Firebase");
+                        Console.WriteLine($"Failed to find batch code '{code}' in Firebase.");
+                        continue;
+                    }
+
+                    // Get beneficiary directly from Firebase data instead of local filtered list
+                    if (!batchCodeToBeneficiary.TryGetValue(code, out var beneficiary))
+                    {
+                        failedBatchCodes.Add(code);
+                        failureReasons.Add("Beneficiary data not found");
+                        Console.WriteLine($"Failed to find beneficiary data for batch code '{code}'.");
+                        continue;
+                    }
+
+                    // Update field on model
                     switch (statusField)
                     {
+                        case "TotalEndorseFromLGUs":
+                            beneficiary.TotalEndorseFromLGUs = true;
+                            break;
                         case "Assessed":
-                            localBeneficiary.Assessed = true;
+                            beneficiary.Assessed = true;
                             break;
                         case "TotalValidated":
-                            localBeneficiary.TotalValidated = true;
+                            beneficiary.TotalValidated = true;
                             break;
                         case "TotalEndorsedToNCSCO":
-                            localBeneficiary.TotalEndorsedToNCSCO = true;
+                            beneficiary.TotalEndorsedToNCSCO = true;
                             break;
                         case "TotalCleanedListFromNCSCO":
-                            localBeneficiary.TotalCleanedListFromNCSCO = true;
+                            beneficiary.TotalCleanedListFromNCSCO = true;
                             break;
                         case "ScheduledPayout":
-                            localBeneficiary.ScheduledPayout = true;
+                            beneficiary.ScheduledPayout = true;
                             break;
                         case "NumberOfApplicantsReceivedCashGift":
-                            localBeneficiary.NumberOfApplicantsReceivedCashGift = true;
+                            beneficiary.NumberOfApplicantsReceivedCashGift = true;
                             break;
                         case "Deceased":
-                            localBeneficiary.Deceased = true;
+                            beneficiary.Deceased = true;
                             break;
                         case "Unpaid":
-                            localBeneficiary.Unpaid = true;
+                            beneficiary.Unpaid = true;
                             break;
                         case "Paid":
-                            localBeneficiary.Paid = true;
+                            beneficiary.Paid = true;
                             break;
+                        default:
+                            MessageBox.Show("Invalid status field.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                    }
+
+                    try
+                    {
+                        // Persist to storage
+                        await FirebaseHelper.SetDataAsync($"beneficiaries/{key}", beneficiary);
+                        
+                        // Update local list if it exists there
+                        var localBeneficiary = allBeneficiaries.FirstOrDefault(b => b.batch_code?.Trim() == code);
+                        if (localBeneficiary != null)
+                        {
+                            // Sync the updated field to local list
+                            switch (statusField)
+                            {
+                                case "TotalEndorseFromLGUs":
+                                    localBeneficiary.TotalEndorseFromLGUs = true;
+                                    break;
+                                case "Assessed":
+                                    localBeneficiary.Assessed = true;
+                                    break;
+                                case "TotalValidated":
+                                    localBeneficiary.TotalValidated = true;
+                                    break;
+                                case "TotalEndorsedToNCSCO":
+                                    localBeneficiary.TotalEndorsedToNCSCO = true;
+                                    break;
+                                case "TotalCleanedListFromNCSCO":
+                                    localBeneficiary.TotalCleanedListFromNCSCO = true;
+                                    break;
+                                case "ScheduledPayout":
+                                    localBeneficiary.ScheduledPayout = true;
+                                    break;
+                                case "NumberOfApplicantsReceivedCashGift":
+                                    localBeneficiary.NumberOfApplicantsReceivedCashGift = true;
+                                    break;
+                                case "Deceased":
+                                    localBeneficiary.Deceased = true;
+                                    break;
+                                case "Unpaid":
+                                    localBeneficiary.Unpaid = true;
+                                    break;
+                                case "Paid":
+                                    localBeneficiary.Paid = true;
+                                    break;
+                            }
+                        }
+                        
+                        updatedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        failedBatchCodes.Add(code);
+                        failureReasons.Add($"Firebase update error: {ex.Message}");
+                        Console.WriteLine($"Error updating batch code '{code}' to Firebase: {ex.Message}");
                     }
                 }
 
-                // Refresh the table
+                // Refresh UI
                 ApplyBeneficiaryFilters();
                 UpdateBeneficiaryCounts();
 
-                MessageBox.Show($"Beneficiary {batchCode} has been successfully updated to {statusField}.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Report results with details about failures
+                string message = $"Updated {updatedCount} beneficiary(ies) to {statusField}.";
+                
+                if (failedBatchCodes.Count > 0)
+                {
+                    message += $"\n\nFailed to update {failedBatchCodes.Count} beneficiary(ies):\n";
+                    for (int i = 0; i < failedBatchCodes.Count && i < 10; i++) // Show up to 10 failures
+                    {
+                        message += $"- {failedBatchCodes[i]}: {failureReasons[i]}\n";
+                    }
+                    if (failedBatchCodes.Count > 10)
+                    {
+                        message += $"... and {failedBatchCodes.Count - 10} more.";
+                    }
+                }
+
+                MessageBox.Show(message, updatedCount > 0 ? "Partial Success" : "Update Failed", 
+                    MessageBoxButtons.OK, 
+                    failedBatchCodes.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error updating beneficiary status: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine($"Exception in UpdateBeneficiaryStatus: {ex.StackTrace}");
             }
         }
 
