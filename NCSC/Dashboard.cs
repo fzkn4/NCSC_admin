@@ -663,6 +663,9 @@ namespace NCSC
         // Store all beneficiaries for filtering
         private List<Beneficiary> allBeneficiaries = new List<Beneficiary>();
 
+        // Store all files for filtering
+        private List<FileData> allFiles = new List<FileData>();
+
         private async Task LoadBeneficiariesFromFirebase()
         {
             beneficiaries_table.Rows.Clear();
@@ -992,31 +995,81 @@ namespace NCSC
                 if (files == null)
                 {
                     Console.WriteLine("No files data received from Firebase");
+                    allFiles.Clear();
+                    ApplyFileHistoryFilters();
                     return;
                 }
 
-                file_history_table.Rows.Clear();
-
+                // Store all files for filtering
+                allFiles.Clear();
                 foreach (var file in files)
                 {
-                    var fileData = file.Value;
-                    if (fileData != null)
+                    if (file.Value != null)
                     {
-                        file_history_table.Rows.Add(
-                            fileData.GetFileName(),
-                            fileData.province ?? "N/A",
-                            fileData.municipality ?? "N/A",
-                            fileData.GetFormattedUploadDate(),
-                            fileData.total_records.ToString()
-                        );
+                        allFiles.Add(file.Value);
                     }
                 }
 
-                Console.WriteLine($"Loaded {files.Count} files from Firebase");
+                Console.WriteLine($"Loaded {allFiles.Count} files from Firebase");
+                
+                // Apply filters to refresh the table
+                ApplyFileHistoryFilters();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading files from Firebase: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        // Apply filters to file history table
+        private void ApplyFileHistoryFilters()
+        {
+            try
+            {
+                // Get filter selections
+                string selectedProvince = graph_report_historical_province_filter.SelectedItem?.ToString();
+                string selectedMunicipality = graph_report_historical_municipality_filter.SelectedItem?.ToString();
+
+                // If "All" is selected or filters are empty, show all files
+                bool filterByProvince = !string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All";
+                bool filterByMunicipality = !string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality";
+
+                // Filter files based on selections
+                var filteredFiles = allFiles.AsEnumerable();
+
+                if (filterByProvince)
+                {
+                    filteredFiles = filteredFiles.Where(f => 
+                        string.Equals((f.province ?? "").Trim(), selectedProvince, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (filterByMunicipality)
+                {
+                    filteredFiles = filteredFiles.Where(f => 
+                        string.Equals((f.municipality ?? "").Trim(), selectedMunicipality, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Clear existing rows
+                file_history_table.Rows.Clear();
+
+                // Add filtered files to table
+                foreach (var fileData in filteredFiles)
+                {
+                    file_history_table.Rows.Add(
+                        fileData.GetFileName(),
+                        fileData.province ?? "N/A",
+                        fileData.municipality ?? "N/A",
+                        fileData.GetFormattedUploadDate(),
+                        fileData.total_records.ToString()
+                    );
+                }
+
+                Console.WriteLine($"Applied filters: {filteredFiles.Count()} files displayed out of {allFiles.Count} total");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error applying file history filters: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
@@ -1163,13 +1216,15 @@ namespace NCSC
                 graph_report_historical_municipality_filter.Items.Add("All");
                 graph_report_historical_municipality_filter.SelectedIndex = 0;
             }
-            // TODO: Add method to update historical report charts based on filter selection
+            // Update file history table with filters
+            ApplyFileHistoryFilters();
             UpdateHistoricalReportCharts();
         }
 
         private void graph_report_historical_municipality_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // TODO: Add method to update historical report charts based on filter selectionq
+            // Update file history table with filters
+            ApplyFileHistoryFilters();
             UpdateHistoricalReportCharts();
         }
 
