@@ -22,12 +22,14 @@
     // New boolean fields
     public bool TotalEndorseFromLGUs { get; set; } = true; // Default to true
     public bool Assessed { get; set; } = false;
-    public bool ScheduleValidation { get; set; } = false;
     public bool TotalValidated { get; set; } = false;
     public bool TotalEndorsedToNCSCO { get; set; } = false;
     public bool TotalCleanedListFromNCSCO { get; set; } = false;
     public bool ScheduledPayout { get; set; } = false;
     public bool NumberOfApplicantsReceivedCashGift { get; set; } = false;
+    public bool Deceased { get; set; } = false;
+    public bool Unpaid { get; set; } = false;
+    public bool Paid { get; set; } = false;
 
     // Constructor to ensure proper initialization
     public Beneficiary()
@@ -35,12 +37,14 @@
         // Ensure boolean fields have proper default values
         TotalEndorseFromLGUs = true; // Default to true for new beneficiaries
         Assessed = false;
-        ScheduleValidation = false;
         TotalValidated = false;
         TotalEndorsedToNCSCO = false;
         TotalCleanedListFromNCSCO = false;
         ScheduledPayout = false;
         NumberOfApplicantsReceivedCashGift = false;
+        Deceased = false;
+        Unpaid = false;
+        Paid = false;
     }
 
     // Method to normalize sex field format for display

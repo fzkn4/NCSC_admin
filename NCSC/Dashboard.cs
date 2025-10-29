@@ -85,12 +85,14 @@ namespace NCSC
             beneficiaries_table_filter.Items.Add("All");
             beneficiaries_table_filter.Items.Add("Total Endorse from LGUs");
             beneficiaries_table_filter.Items.Add("Assessed");
-            beneficiaries_table_filter.Items.Add("Schedule Validation");
             beneficiaries_table_filter.Items.Add("Total Validated");
             beneficiaries_table_filter.Items.Add("Total Endorsed to NCSC CO");
             beneficiaries_table_filter.Items.Add("Total Cleaned list from NCSC CO");
             beneficiaries_table_filter.Items.Add("Scheduled payout");
             beneficiaries_table_filter.Items.Add("No. of applicants received the Cash Gift");
+            beneficiaries_table_filter.Items.Add("Deceased");
+            beneficiaries_table_filter.Items.Add("Unpaid");
+            beneficiaries_table_filter.Items.Add("Paid");
             beneficiaries_table_filter.SelectedIndex = 0;
         }
 
@@ -764,10 +766,6 @@ namespace NCSC
                         filtered = filtered.Where(b => b.Assessed);
                         Console.WriteLine($"Filtered to {filtered.Count()} records for Assessed");
                         break;
-                    case "Schedule Validation":
-                        filtered = filtered.Where(b => b.ScheduleValidation);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for ScheduleValidation");
-                        break;
                     case "Total Validated":
                         filtered = filtered.Where(b => b.TotalValidated);
                         Console.WriteLine($"Filtered to {filtered.Count()} records for TotalValidated");
@@ -787,6 +785,18 @@ namespace NCSC
                     case "No. of applicants received the Cash Gift":
                         filtered = filtered.Where(b => b.NumberOfApplicantsReceivedCashGift);
                         Console.WriteLine($"Filtered to {filtered.Count()} records for NumberOfApplicantsReceivedCashGift");
+                        break;
+                    case "Deceased":
+                        filtered = filtered.Where(b => b.Deceased);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for Deceased");
+                        break;
+                    case "Unpaid":
+                        filtered = filtered.Where(b => b.Unpaid);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for Unpaid");
+                        break;
+                    case "Paid":
+                        filtered = filtered.Where(b => b.Paid);
+                        Console.WriteLine($"Filtered to {filtered.Count()} records for Paid");
                         break;
                 }
             }
@@ -1325,9 +1335,6 @@ namespace NCSC
             var assessedItem = beneficiariesContextMenu.Items.Add("Add to: Assessed");
             assessedItem.Click += (s, e) => UpdateBeneficiaryStatus("Assessed");
 
-            var scheduleValidationItem = beneficiariesContextMenu.Items.Add("Add to: Schedule Validation");
-            scheduleValidationItem.Click += (s, e) => UpdateBeneficiaryStatus("ScheduleValidation");
-
             var totalValidatedItem = beneficiariesContextMenu.Items.Add("Add to: Total Validated");
             totalValidatedItem.Click += (s, e) => UpdateBeneficiaryStatus("TotalValidated");
 
@@ -1342,6 +1349,15 @@ namespace NCSC
 
             var receivedCashGiftItem = beneficiariesContextMenu.Items.Add("Add to: No. of applicants received the Cash Gift");
             receivedCashGiftItem.Click += (s, e) => UpdateBeneficiaryStatus("NumberOfApplicantsReceivedCashGift");
+
+            var deceasedItem = beneficiariesContextMenu.Items.Add("Add to: Deceased");
+            deceasedItem.Click += (s, e) => UpdateBeneficiaryStatus("Deceased");
+
+            var unpaidItem = beneficiariesContextMenu.Items.Add("Add to: Unpaid");
+            unpaidItem.Click += (s, e) => UpdateBeneficiaryStatus("Unpaid");
+
+            var paidItem = beneficiariesContextMenu.Items.Add("Add to: Paid");
+            paidItem.Click += (s, e) => UpdateBeneficiaryStatus("Paid");
 
             beneficiariesContextMenu.Opening += (s, e) =>
             {
@@ -1385,9 +1401,6 @@ namespace NCSC
                     case "Assessed":
                         beneficiary.Assessed = true;
                         break;
-                    case "ScheduleValidation":
-                        beneficiary.ScheduleValidation = true;
-                        break;
                     case "TotalValidated":
                         beneficiary.TotalValidated = true;
                         break;
@@ -1402,6 +1415,15 @@ namespace NCSC
                         break;
                     case "NumberOfApplicantsReceivedCashGift":
                         beneficiary.NumberOfApplicantsReceivedCashGift = true;
+                        break;
+                    case "Deceased":
+                        beneficiary.Deceased = true;
+                        break;
+                    case "Unpaid":
+                        beneficiary.Unpaid = true;
+                        break;
+                    case "Paid":
+                        beneficiary.Paid = true;
                         break;
                     default:
                         MessageBox.Show("Invalid status field.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1442,9 +1464,6 @@ namespace NCSC
                         case "Assessed":
                             localBeneficiary.Assessed = true;
                             break;
-                        case "ScheduleValidation":
-                            localBeneficiary.ScheduleValidation = true;
-                            break;
                         case "TotalValidated":
                             localBeneficiary.TotalValidated = true;
                             break;
@@ -1459,6 +1478,15 @@ namespace NCSC
                             break;
                         case "NumberOfApplicantsReceivedCashGift":
                             localBeneficiary.NumberOfApplicantsReceivedCashGift = true;
+                            break;
+                        case "Deceased":
+                            localBeneficiary.Deceased = true;
+                            break;
+                        case "Unpaid":
+                            localBeneficiary.Unpaid = true;
+                            break;
+                        case "Paid":
+                            localBeneficiary.Paid = true;
                             break;
                     }
                 }
@@ -1696,15 +1724,17 @@ namespace NCSC
 
                         if (hasData)
                         {
-                            // Set default values
+                            // Set default values - all false except Total Endorse from LGUs
                             beneficiary.Assessed = false;
                             beneficiary.NumberOfApplicantsReceivedCashGift = false;
-                            beneficiary.ScheduleValidation = false;
                             beneficiary.ScheduledPayout = false;
                             beneficiary.TotalCleanedListFromNCSCO = false;
-                            beneficiary.TotalEndorseFromLGUs = true;
+                            beneficiary.TotalEndorseFromLGUs = true; // Default to true for new beneficiaries
                             beneficiary.TotalEndorsedToNCSCO = false;
                             beneficiary.TotalValidated = false;
+                            beneficiary.Deceased = false;
+                            beneficiary.Unpaid = false;
+                            beneficiary.Paid = false;
 
                             // Generate batch code
                             beneficiary.batch_code = GenerateBatchCode();

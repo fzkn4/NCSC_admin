@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Beneficiaries_filter_window));
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
@@ -42,8 +42,6 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             guna2AnimateWindow1 = new Guna.UI2.WinForms.Guna2AnimateWindow(components);
@@ -51,11 +49,9 @@
             closeButton = new Guna.UI2.WinForms.Guna2Button();
             label1 = new Label();
             guna2ComboBox3 = new Guna.UI2.WinForms.Guna2ComboBox();
-            label6 = new Label();
             guna2ComboBox2 = new Guna.UI2.WinForms.Guna2ComboBox();
             label4 = new Label();
             guna2ComboBox1 = new Guna.UI2.WinForms.Guna2ComboBox();
-            summary_filter = new Guna.UI2.WinForms.Guna2ComboBox();
             pwd_checkbox = new Guna.UI2.WinForms.Guna2CheckBox();
             label3 = new Label();
             ip_checkbox = new Guna.UI2.WinForms.Guna2CheckBox();
@@ -92,7 +88,7 @@
             closeButton.Animated = true;
             closeButton.BackColor = Color.Transparent;
             closeButton.BorderColor = Color.Transparent;
-            closeButton.CustomizableEdges = customizableEdges15;
+            closeButton.CustomizableEdges = customizableEdges13;
             closeButton.DisabledState.BorderColor = Color.DarkGray;
             closeButton.DisabledState.CustomBorderColor = Color.DarkGray;
             closeButton.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -110,7 +106,7 @@
             closeButton.PressedColor = Color.Transparent;
             closeButton.PressedDepth = 0;
             closeButton.ShadowDecoration.Color = Color.Transparent;
-            closeButton.ShadowDecoration.CustomizableEdges = customizableEdges16;
+            closeButton.ShadowDecoration.CustomizableEdges = customizableEdges14;
             closeButton.Size = new Size(29, 26);
             closeButton.TabIndex = 40;
             closeButton.Click += closeButton_Click;
@@ -143,29 +139,16 @@
             guna2ComboBox3.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             guna2ComboBox3.ForeColor = SystemColors.ControlText;
             guna2ComboBox3.ItemHeight = 24;
-            guna2ComboBox3.Items.AddRange(new object[] { "Total Endorse from LGUs", "Assessed", "Schedule Validation ", "Total Validated", "Total Endorsed to NCSC CO", "Total Cleaned list from NCSC CO", "Scheduled payout", "No. of applicants recieved the Cash Gift" });
+            guna2ComboBox3.Items.AddRange(new object[] { "Total Endorse from LGUs", "Assessed", "Total Validated", "Total Endorsed to NCSC CO", "Total Cleaned list from NCSC CO", "Scheduled payout", "No. of applicants recieved the Cash Gift", "Deceased", "Unpaid", "Paid" });
             guna2ComboBox3.ItemsAppearance.BackColor = Color.White;
             guna2ComboBox3.ItemsAppearance.SelectedBackColor = Color.FromArgb(134, 115, 243);
             guna2ComboBox3.ItemsAppearance.SelectedForeColor = Color.White;
-            guna2ComboBox3.Location = new Point(37, 409);
+            guna2ComboBox3.Location = new Point(262, 298);
             guna2ComboBox3.Name = "guna2ComboBox3";
             guna2ComboBox3.ShadowDecoration.CustomizableEdges = customizableEdges4;
             guna2ComboBox3.Size = new Size(212, 30);
             guna2ComboBox3.StartIndex = 0;
             guna2ComboBox3.TabIndex = 101;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.BackColor = Color.Transparent;
-            label6.Font = new Font("Poppins SemiBold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label6.ForeColor = Color.FromArgb(108, 103, 103);
-            label6.Location = new Point(36, 378);
-            label6.Name = "label6";
-            label6.Size = new Size(160, 28);
-            label6.TabIndex = 100;
-            label6.Text = "Beneficiary status";
-            label6.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // guna2ComboBox2
             // 
@@ -186,7 +169,7 @@
             guna2ComboBox2.ItemsAppearance.BackColor = Color.White;
             guna2ComboBox2.ItemsAppearance.SelectedBackColor = Color.FromArgb(134, 115, 243);
             guna2ComboBox2.ItemsAppearance.SelectedForeColor = Color.White;
-            guna2ComboBox2.Location = new Point(263, 522);
+            guna2ComboBox2.Location = new Point(263, 403);
             guna2ComboBox2.Name = "guna2ComboBox2";
             guna2ComboBox2.ShadowDecoration.CustomizableEdges = customizableEdges6;
             guna2ComboBox2.Size = new Size(212, 30);
@@ -198,7 +181,7 @@
             label4.BackColor = Color.Transparent;
             label4.Font = new Font("Poppins SemiBold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.FromArgb(108, 103, 103);
-            label4.Location = new Point(262, 491);
+            label4.Location = new Point(262, 372);
             label4.Name = "label4";
             label4.Size = new Size(112, 28);
             label4.TabIndex = 98;
@@ -224,39 +207,12 @@
             guna2ComboBox1.ItemsAppearance.BackColor = Color.White;
             guna2ComboBox1.ItemsAppearance.SelectedBackColor = Color.FromArgb(134, 115, 243);
             guna2ComboBox1.ItemsAppearance.SelectedForeColor = Color.White;
-            guna2ComboBox1.Location = new Point(38, 522);
+            guna2ComboBox1.Location = new Point(38, 403);
             guna2ComboBox1.Name = "guna2ComboBox1";
             guna2ComboBox1.ShadowDecoration.CustomizableEdges = customizableEdges8;
             guna2ComboBox1.Size = new Size(212, 30);
             guna2ComboBox1.TabIndex = 97;
             guna2ComboBox1.SelectedIndexChanged += guna2ComboBox1_SelectedIndexChanged;
-            // 
-            // summary_filter
-            // 
-            summary_filter.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            summary_filter.AutoCompleteCustomSource.AddRange(new string[] { "2020", "2021", "2022", "2023", "2024", "2025" });
-            summary_filter.BackColor = Color.Transparent;
-            summary_filter.BorderColor = Color.FromArgb(213, 205, 205);
-            summary_filter.BorderRadius = 4;
-            summary_filter.CustomizableEdges = customizableEdges9;
-            summary_filter.DrawMode = DrawMode.OwnerDrawFixed;
-            summary_filter.DropDownStyle = ComboBoxStyle.DropDownList;
-            summary_filter.FillColor = Color.FromArgb(213, 205, 205);
-            summary_filter.FocusedColor = Color.FromArgb(134, 115, 243);
-            summary_filter.FocusedState.BorderColor = Color.FromArgb(134, 115, 243);
-            summary_filter.Font = new Font("Poppins", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            summary_filter.ForeColor = SystemColors.ControlText;
-            summary_filter.ItemHeight = 24;
-            summary_filter.Items.AddRange(new object[] { "All", "Submitted", "Pending", "Approved" });
-            summary_filter.ItemsAppearance.BackColor = Color.White;
-            summary_filter.ItemsAppearance.SelectedBackColor = Color.FromArgb(134, 115, 243);
-            summary_filter.ItemsAppearance.SelectedForeColor = Color.White;
-            summary_filter.Location = new Point(262, 298);
-            summary_filter.Name = "summary_filter";
-            summary_filter.ShadowDecoration.CustomizableEdges = customizableEdges10;
-            summary_filter.Size = new Size(212, 30);
-            summary_filter.StartIndex = 0;
-            summary_filter.TabIndex = 96;
             // 
             // pwd_checkbox
             // 
@@ -370,7 +326,7 @@
             cancel_button.Animated = true;
             cancel_button.BackColor = Color.Transparent;
             cancel_button.BorderRadius = 8;
-            cancel_button.CustomizableEdges = customizableEdges11;
+            cancel_button.CustomizableEdges = customizableEdges9;
             cancel_button.DisabledState.BorderColor = Color.DarkGray;
             cancel_button.DisabledState.CustomBorderColor = Color.DarkGray;
             cancel_button.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -378,9 +334,9 @@
             cancel_button.FillColor = Color.FromArgb(221, 214, 214);
             cancel_button.Font = new Font("Poppins SemiBold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             cancel_button.ForeColor = SystemColors.ControlText;
-            cancel_button.Location = new Point(329, 599);
+            cancel_button.Location = new Point(329, 480);
             cancel_button.Name = "cancel_button";
-            cancel_button.ShadowDecoration.CustomizableEdges = customizableEdges12;
+            cancel_button.ShadowDecoration.CustomizableEdges = customizableEdges10;
             cancel_button.Size = new Size(146, 39);
             cancel_button.TabIndex = 88;
             cancel_button.Text = "Clear";
@@ -391,7 +347,7 @@
             submit_button.Animated = true;
             submit_button.BackColor = Color.Transparent;
             submit_button.BorderRadius = 8;
-            submit_button.CustomizableEdges = customizableEdges13;
+            submit_button.CustomizableEdges = customizableEdges11;
             submit_button.DisabledState.BorderColor = Color.DarkGray;
             submit_button.DisabledState.CustomBorderColor = Color.DarkGray;
             submit_button.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -399,9 +355,9 @@
             submit_button.FillColor = Color.FromArgb(134, 115, 243);
             submit_button.Font = new Font("Poppins SemiBold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             submit_button.ForeColor = Color.White;
-            submit_button.Location = new Point(177, 599);
+            submit_button.Location = new Point(177, 480);
             submit_button.Name = "submit_button";
-            submit_button.ShadowDecoration.CustomizableEdges = customizableEdges14;
+            submit_button.ShadowDecoration.CustomizableEdges = customizableEdges12;
             submit_button.Size = new Size(146, 39);
             submit_button.TabIndex = 87;
             submit_button.Text = "Filter";
@@ -412,7 +368,7 @@
             label8.BackColor = Color.Transparent;
             label8.Font = new Font("Poppins SemiBold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label8.ForeColor = Color.FromArgb(108, 103, 103);
-            label8.Location = new Point(37, 491);
+            label8.Location = new Point(37, 372);
             label8.Name = "label8";
             label8.Size = new Size(83, 28);
             label8.TabIndex = 86;
@@ -459,14 +415,12 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
-            ClientSize = new Size(510, 670);
+            ClientSize = new Size(510, 558);
             Controls.Add(guna2Panel1);
             Controls.Add(guna2ComboBox3);
-            Controls.Add(label6);
             Controls.Add(guna2ComboBox2);
             Controls.Add(label4);
             Controls.Add(guna2ComboBox1);
-            Controls.Add(summary_filter);
             Controls.Add(pwd_checkbox);
             Controls.Add(label3);
             Controls.Add(ip_checkbox);
@@ -500,11 +454,9 @@
         private Label label1;
         private Guna.UI2.WinForms.Guna2Panel guna2Panel1;
         private Guna.UI2.WinForms.Guna2ComboBox guna2ComboBox3;
-        private Label label6;
         private Guna.UI2.WinForms.Guna2ComboBox guna2ComboBox2;
         private Label label4;
         private Guna.UI2.WinForms.Guna2ComboBox guna2ComboBox1;
-        private Guna.UI2.WinForms.Guna2ComboBox summary_filter;
         private Guna.UI2.WinForms.Guna2CheckBox pwd_checkbox;
         private Label label3;
         private Guna.UI2.WinForms.Guna2CheckBox ip_checkbox;
