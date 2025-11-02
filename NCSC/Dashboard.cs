@@ -1420,19 +1420,26 @@ namespace NCSC
         {
             try
             {
-                // Load files from Firebase to get years
-                var allFiles = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
+                // Load beneficiaries from Firebase to get years from date_validated
+                var allBeneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
                 
-                if (allFiles != null && allFiles.Count > 0)
+                if (allBeneficiaries != null && allBeneficiaries.Count > 0)
                 {
-                    // Extract unique years from upload_year
+                    // Extract unique years from date_validated
                     var years = new HashSet<int>();
                     
-                    foreach (var file in allFiles.Values)
+                    foreach (var beneficiary in allBeneficiaries.Values)
                     {
-                        if (file != null && file.upload_year > 0)
+                        if (beneficiary != null && !string.IsNullOrEmpty(beneficiary.date_validated))
                         {
-                            years.Add(file.upload_year);
+                            if (DateTime.TryParse(beneficiary.date_validated, out DateTime validationDate))
+                            {
+                                int year = validationDate.Year;
+                                if (year > 0)
+                                {
+                                    years.Add(year);
+                                }
+                            }
                         }
                     }
                     
@@ -1996,26 +2003,24 @@ namespace NCSC
                     filteredFiles = filteredFiles.Where(f => f.municipality == selectedMunicipality);
                 }
 
-                // Filter by selected year
-                if (filterByYear && int.TryParse(selectedYear, out int yearToFilter))
+                // Load beneficiaries early if we need to filter by year or status
+                Dictionary<string, Beneficiary> allBeneficiaries = null;
+                if (filterByYear || filterByStatus)
                 {
-                    filteredFiles = filteredFiles.Where(f => f.upload_year == yearToFilter);
-                }
-
-                // If status filter is active, we need to count beneficiaries with that status per batch
-                if (filterByStatus)
-                {
-                    // Load beneficiaries to check their status
-                    var allBeneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
+                    allBeneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
                     
-                    if (allBeneficiaries == null)
+                    if (allBeneficiaries == null && (filterByYear || filterByStatus))
                     {
                         graph_report_bar_chart_dataset.DataPoints.Clear();
                         graph_report_chart.Datasets.Clear();
                         graph_report_chart.Update();
                         return;
                     }
+                }
 
+                // If status filter is active, we need to count beneficiaries with that status per batch
+                if (filterByStatus)
+                {
                     // Group by batch number and count beneficiaries with the selected status
                     var batchData = new Dictionary<int, int>();
                     
@@ -2045,7 +2050,24 @@ namespace NCSC
                                         matchesLocation = false;
                                     }
                                     
-                                    if (matchesLocation && CheckBeneficiaryStatus(beneficiary, selectedStatus))
+                                    // Apply year filter based on beneficiary's validation year
+                                    bool matchesYear = true;
+                                    if (filterByYear && int.TryParse(selectedYear, out int yearToFilter))
+                                    {
+                                        matchesYear = false;
+                                        if (!string.IsNullOrEmpty(beneficiary.date_validated))
+                                        {
+                                            if (DateTime.TryParse(beneficiary.date_validated, out DateTime validationDate))
+                                            {
+                                                if (validationDate.Year == yearToFilter)
+                                                {
+                                                    matchesYear = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (matchesLocation && matchesYear && CheckBeneficiaryStatus(beneficiary, selectedStatus))
                                     {
                                         countWithStatus++;
                                     }
@@ -2088,18 +2110,65 @@ namespace NCSC
                 }
                 else
                 {
-                    // No status filter - use file counts (original behavior)
+                    // No status filter - count beneficiaries per batch, optionally filtered by year
                     var batchData = new Dictionary<int, int>();
                     
-                    foreach (var file in filteredFiles)
+                    // If year filter is active, we need to count beneficiaries filtered by validation year
+                    if (filterByYear && int.TryParse(selectedYear, out int yearToFilter) && allBeneficiaries != null)
                     {
-                        if (file.batch_number > 0)
+                        // Count beneficiaries per batch filtered by validation year
+                        foreach (var beneficiary in allBeneficiaries.Values)
                         {
-                            if (!batchData.ContainsKey(file.batch_number))
+                            if (beneficiary != null && beneficiary.batch_number > 0)
                             {
-                                batchData[file.batch_number] = 0;
+                                // Apply province/municipality filter
+                                bool matchesLocation = true;
+                                if (filterByProvince && !string.Equals(beneficiary.province?.Trim(), selectedProvince, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    matchesLocation = false;
+                                }
+                                if (filterByMunicipality && !string.Equals(beneficiary.municipality?.Trim(), selectedMunicipality, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    matchesLocation = false;
+                                }
+                                
+                                // Apply year filter based on beneficiary's validation year
+                                bool matchesYear = false;
+                                if (!string.IsNullOrEmpty(beneficiary.date_validated))
+                                {
+                                    if (DateTime.TryParse(beneficiary.date_validated, out DateTime validationDate))
+                                    {
+                                        if (validationDate.Year == yearToFilter)
+                                        {
+                                            matchesYear = true;
+                                        }
+                                    }
+                                }
+                                
+                                if (matchesLocation && matchesYear)
+                                {
+                                    if (!batchData.ContainsKey(beneficiary.batch_number))
+                                    {
+                                        batchData[beneficiary.batch_number] = 0;
+                                    }
+                                    batchData[beneficiary.batch_number]++;
+                                }
                             }
-                            batchData[file.batch_number] += file.unique_records; // Count unique beneficiaries per batch
+                        }
+                    }
+                    else
+                    {
+                        // No year filter - use file counts (original behavior)
+                        foreach (var file in filteredFiles)
+                        {
+                            if (file.batch_number > 0)
+                            {
+                                if (!batchData.ContainsKey(file.batch_number))
+                                {
+                                    batchData[file.batch_number] = 0;
+                                }
+                                batchData[file.batch_number] += file.unique_records; // Count unique beneficiaries per batch
+                            }
                         }
                     }
 
@@ -2329,7 +2398,7 @@ namespace NCSC
                             beneficiary.Paid = false;
 
                             // Generate batch code
-                            beneficiary.batch_code = GenerateBatchCode();
+                            beneficiary.batch_code = GenerateBatchCode(beneficiary.province, beneficiary.municipality);
 
                             // Set validation date
                             beneficiary.date_validated = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
@@ -2372,10 +2441,10 @@ namespace NCSC
             }
         }
 
-        // Generate batch code for WinForms
-        private string GenerateBatchCode()
+        // Generate batch code for WinForms (admin always uses ADMIN prefix)
+        private string GenerateBatchCode(string province = null, string municipality = null)
         {
-            // Generate a simple batch code with timestamp
+            // Dashboard.cs is the admin interface - always use ADMIN prefix
             var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
             var random = new Random().Next(1000, 9999);
             return $"ADMIN-{timestamp}-{random}";
@@ -2611,7 +2680,7 @@ namespace NCSC
                 // Create file tracking record with proper counts
                 var fileRecord = new FileData
                 {
-                    batch_code = GenerateBatchCode(), // Generate a batch code for the file
+                    batch_code = GenerateBatchCode(province, municipality), // Generate a batch code for the file
                     file_name = fileName,
                     province = province,
                     municipality = municipality,
