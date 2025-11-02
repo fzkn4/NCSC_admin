@@ -473,6 +473,13 @@ namespace NCSC
             bday90.DataPoints.Clear();
             bday95.DataPoints.Clear();
             bday100.DataPoints.Clear();
+            
+            // Re-ensure TargetChart is set (in case .Clear() removed the reference)
+            bday80.TargetChart = budgetChart;
+            bday85.TargetChart = budgetChart;
+            bday90.TargetChart = budgetChart;
+            bday95.TargetChart = budgetChart;
+            bday100.TargetChart = budgetChart;
 
             // Prepare 12-month counters for each milestone
             int[] count80 = new int[12];
@@ -483,34 +490,60 @@ namespace NCSC
 
             int currentYear = DateTime.Now.Year;
 
-            // Count milestone birthdays from all beneficiaries (not just filtered table)
+            // Count milestone birthdays from all beneficiaries
+            // Filter by: validated this year AND currently aged 79, 84, 89, 94, or 99
             foreach (var beneficiary in allBeneficiaries)
             {
+                // First, check if the beneficiary was validated this year
+                if (DateTime.TryParse(beneficiary.date_validated, out DateTime validationDate))
+                {
+                    if (validationDate.Year != currentYear)
+                    {
+                        continue; // Skip if not validated this year
+                    }
+                }
+                else
+                {
+                    continue; // Skip if validation date is invalid
+                }
+
+                // Parse birth date
                 if (DateTime.TryParse(beneficiary.birth_date, out DateTime birthDate))
                 {
                     int birthYear = birthDate.Year;
                     int birthMonth = birthDate.Month;
 
-                    // Determine the age the person will turn THIS YEAR
-                    int turningThisYear = currentYear - birthYear;
-
-                    switch (turningThisYear)
+                    // Calculate current age at validation (use validation date, not today)
+                    int currentAge = validationDate.Year - birthYear;
+                    
+                    // Adjust age if birthday hasn't occurred yet in the validation year
+                    if (validationDate.Month < birthDate.Month || 
+                        (validationDate.Month == birthDate.Month && validationDate.Day < birthDate.Day))
                     {
-                        case 80:
-                            count80[birthMonth - 1]++;
-                            break;
-                        case 85:
-                            count85[birthMonth - 1]++;
-                            break;
-                        case 90:
-                            count90[birthMonth - 1]++;
-                            break;
-                        case 95:
-                            count95[birthMonth - 1]++;
-                            break;
-                        case 100:
-                            count100[birthMonth - 1]++;
-                            break;
+                        currentAge--;
+                    }
+
+                    // Check if they will hit a milestone age this year
+                    // Current ages 79, 84, 89, 94, 99 will turn 80, 85, 90, 95, 100
+                    if (currentAge == 79)
+                    {
+                        count80[birthMonth - 1]++;
+                    }
+                    else if (currentAge == 84)
+                    {
+                        count85[birthMonth - 1]++;
+                    }
+                    else if (currentAge == 89)
+                    {
+                        count90[birthMonth - 1]++;
+                    }
+                    else if (currentAge == 94)
+                    {
+                        count95[birthMonth - 1]++;
+                    }
+                    else if (currentAge == 99)
+                    {
+                        count100[birthMonth - 1]++;
                     }
                 }
             }
@@ -527,6 +560,47 @@ namespace NCSC
                 bday100.DataPoints.Add(monthName, count100[i]);
             }
 
+            // Re-ensure styles are maintained after clearing
+            bday80.BorderColor = Color.FromArgb(3, 166, 161);
+            bday80.FillColor = Color.FromArgb(3, 166, 161);
+            bday80.Label = "80";
+            bday80.PointBorderColors.Clear();
+            bday80.PointBorderColors.AddRange(new Color[] { Color.FromArgb(3, 166, 161) });
+            bday80.PointFillColors.Clear();
+            bday80.PointFillColors.AddRange(new Color[] { Color.FromArgb(3, 166, 161) });
+            
+            bday85.BorderColor = Color.FromArgb(255, 227, 187);
+            bday85.FillColor = Color.FromArgb(255, 227, 187);
+            bday85.Label = "85";
+            bday85.PointBorderColors.Clear();
+            bday85.PointBorderColors.AddRange(new Color[] { Color.FromArgb(255, 227, 187) });
+            bday85.PointFillColors.Clear();
+            bday85.PointFillColors.AddRange(new Color[] { Color.FromArgb(255, 227, 187) });
+            
+            bday90.BorderColor = Color.FromArgb(200, 63, 18);
+            bday90.FillColor = Color.FromArgb(200, 63, 18);
+            bday90.Label = "90";
+            bday90.PointBorderColors.Clear();
+            bday90.PointBorderColors.AddRange(new Color[] { Color.FromArgb(200, 63, 18) });
+            bday90.PointFillColors.Clear();
+            bday90.PointFillColors.AddRange(new Color[] { Color.FromArgb(200, 63, 18) });
+            
+            bday95.BorderColor = Color.FromArgb(128, 64, 64);
+            bday95.FillColor = Color.FromArgb(128, 64, 64);
+            bday95.Label = "95";
+            bday95.PointBorderColors.Clear();
+            bday95.PointBorderColors.AddRange(new Color[] { Color.FromArgb(255, 166, 115) });
+            bday95.PointFillColors.Clear();
+            bday95.PointFillColors.AddRange(new Color[] { Color.FromArgb(255, 166, 115) });
+            
+            bday100.BorderColor = Color.FromArgb(255, 166, 115);
+            bday100.FillColor = Color.FromArgb(255, 166, 115);
+            bday100.Label = "100";
+            bday100.PointBorderColors.Clear();
+            bday100.PointBorderColors.AddRange(new Color[] { Color.FromArgb(255, 166, 115) });
+            bday100.PointFillColors.Clear();
+            bday100.PointFillColors.AddRange(new Color[] { Color.FromArgb(255, 166, 115) });
+
             // Add all datasets to the chart
             budgetChart.Datasets.Add(bday80);
             budgetChart.Datasets.Add(bday85);
@@ -535,6 +609,21 @@ namespace NCSC
             budgetChart.Datasets.Add(bday100);
 
             budgetChart.Update();
+            
+            // Debug logging to check if we're getting data
+            int totalCount80 = count80.Sum();
+            int totalCount85 = count85.Sum();
+            int totalCount90 = count90.Sum();
+            int totalCount95 = count95.Sum();
+            int totalCount100 = count100.Sum();
+            
+            Console.WriteLine($"UpdateMilestoneBirthdayChartByMonth - Year {currentYear}:");
+            Console.WriteLine($"  Total beneficiaries (all): {allBeneficiaries.Count}");
+            Console.WriteLine($"  Turning 80 this year (age 79): {totalCount80}");
+            Console.WriteLine($"  Turning 85 this year (age 84): {totalCount85}");
+            Console.WriteLine($"  Turning 90 this year (age 89): {totalCount90}");
+            Console.WriteLine($"  Turning 95 this year (age 94): {totalCount95}");
+            Console.WriteLine($"  Turning 100 this year (age 99): {totalCount100}");
         }
 
 
@@ -1267,10 +1356,17 @@ namespace NCSC
             graph_report_batch_graph_filter.Items.Add("Paid");
             graph_report_batch_graph_filter.SelectedIndex = 0;
 
+            // Initialize year filter dropdown
+            graph_report_batch_graph_year.Items.Clear();
+            graph_report_batch_graph_year.Items.Add("All");
+            // Year items will be populated from beneficiary data asynchronously
+            InitializeYearFilter();
+
             // Set up event handlers for batch graph filters
             graph_report_batch_graph_province.SelectedIndexChanged += graph_report_batch_graph_province_SelectedIndexChanged;
             graph_report_batch_graph_municipality.SelectedIndexChanged += graph_report_batch_graph_municipality_SelectedIndexChanged;
             graph_report_batch_graph_filter.SelectedIndexChanged += graph_report_batch_graph_filter_SelectedIndexChanged;
+            graph_report_batch_graph_year.SelectedIndexChanged += graph_report_batch_graph_year_SelectedIndexChanged;
         }
 
         private async void graph_report_batch_graph_province_SelectedIndexChanged(object sender, EventArgs e)
@@ -1312,6 +1408,83 @@ namespace NCSC
         {
             // Update batch graph charts based on filter selection
             await UpdateBatchGraphChartsAsync();
+        }
+
+        private async void graph_report_batch_graph_year_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Update batch graph charts based on filter selection
+            await UpdateBatchGraphChartsAsync();
+        }
+
+        private async Task InitializeYearFilter()
+        {
+            try
+            {
+                // Load files from Firebase to get years
+                var allFiles = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
+                
+                if (allFiles != null && allFiles.Count > 0)
+                {
+                    // Extract unique years from upload_year
+                    var years = new HashSet<int>();
+                    
+                    foreach (var file in allFiles.Values)
+                    {
+                        if (file != null && file.upload_year > 0)
+                        {
+                            years.Add(file.upload_year);
+                        }
+                    }
+                    
+                    // Sort years and add to dropdown
+                    var sortedYears = years.OrderByDescending(y => y).ToList();
+                    
+                    if (sortedYears.Count > 0)
+                    {
+                        // Invoke UI update on the UI thread
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                foreach (var year in sortedYears)
+                                {
+                                    graph_report_batch_graph_year.Items.Add(year.ToString());
+                                }
+                            }));
+                        }
+                        else
+                        {
+                            foreach (var year in sortedYears)
+                            {
+                                graph_report_batch_graph_year.Items.Add(year.ToString());
+                            }
+                        }
+                    }
+                }
+                
+                // Set default selection to first item (All) on UI thread
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        if (graph_report_batch_graph_year.Items.Count > 0)
+                        {
+                            graph_report_batch_graph_year.SelectedIndex = 0;
+                        }
+                    }));
+                }
+                else
+                {
+                    if (graph_report_batch_graph_year.Items.Count > 0)
+                    {
+                        graph_report_batch_graph_year.SelectedIndex = 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing year filter: {ex.Message}");
+            }
         }
 
         // Synchronous wrapper for backward compatibility - redirects to async version
@@ -1764,6 +1937,11 @@ namespace NCSC
                 // Reload files from Firebase for file history table
                 await LoadFilesFromFirebase();
 
+                // Re-populate year filter with latest data from files
+                graph_report_batch_graph_year.Items.Clear();
+                graph_report_batch_graph_year.Items.Add("All");
+                await InitializeYearFilter();
+
                 // Update all charts in the graph report panel
                 UpdateHistoricalReportCharts();
                 await UpdateBatchGraphChartsAsync();
@@ -1785,12 +1963,13 @@ namespace NCSC
                 string selectedProvince = graph_report_batch_graph_province.SelectedItem?.ToString();
                 string selectedMunicipality = graph_report_batch_graph_municipality.SelectedItem?.ToString();
                 string selectedStatus = graph_report_batch_graph_filter.SelectedItem?.ToString();
-                int currentYear = DateTime.Now.Year;
+                string selectedYear = graph_report_batch_graph_year.SelectedItem?.ToString();
 
                 // If "All" is selected or filters are empty, show data for all
                 bool filterByProvince = !string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All";
                 bool filterByMunicipality = !string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality";
                 bool filterByStatus = !string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All";
+                bool filterByYear = !string.IsNullOrEmpty(selectedYear) && selectedYear != "All";
 
                 // Load files from Firebase
                 var allFiles = await FirebaseHelper.GetDataAsync<Dictionary<string, FileData>>("files");
@@ -1817,8 +1996,11 @@ namespace NCSC
                     filteredFiles = filteredFiles.Where(f => f.municipality == selectedMunicipality);
                 }
 
-                // Filter by current year
-                filteredFiles = filteredFiles.Where(f => f.upload_year == currentYear);
+                // Filter by selected year
+                if (filterByYear && int.TryParse(selectedYear, out int yearToFilter))
+                {
+                    filteredFiles = filteredFiles.Where(f => f.upload_year == yearToFilter);
+                }
 
                 // If status filter is active, we need to count beneficiaries with that status per batch
                 if (filterByStatus)
