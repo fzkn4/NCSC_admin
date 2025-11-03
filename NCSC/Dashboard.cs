@@ -61,6 +61,20 @@ namespace NCSC
             beneficiaries_province_filter.SelectedIndexChanged += beneficiaries_province_filter_SelectedIndexChanged;
             beneficiaries_municipality_filter.SelectedIndexChanged += beneficiaries_municipality_filter_SelectedIndexChanged;
             beneficiaries_table_filter.SelectedIndexChanged += beneficiaries_table_filter_SelectedIndexChanged;
+            if (search_bar_beneficiaries != null)
+            {
+                search_bar_beneficiaries.TextChanged += search_bar_beneficiaries_TextChanged;
+                // Also try KeyUp as backup for some textbox implementations
+                search_bar_beneficiaries.KeyUp += (s, e) => {
+                    Console.WriteLine("KeyUp event on search bar!");
+                    FilterVisibleTableRows();
+                };
+                Console.WriteLine("Search bar event handlers registered");
+            }
+            else
+            {
+                Console.WriteLine("WARNING: search_bar_beneficiaries is null during initialization!");
+            }
             summary_filter.SelectedIndexChanged += summary_filter_SelectedIndexChanged;
 
             // Set up message button event handlers
@@ -973,7 +987,6 @@ namespace NCSC
             string selectedProvince = beneficiaries_province_filter.SelectedItem?.ToString();
             string selectedMunicipality = beneficiaries_municipality_filter.SelectedItem?.ToString();
             string selectedStatus = beneficiaries_table_filter.SelectedItem?.ToString();
-
             Console.WriteLine($"Applying filters - Total beneficiaries: {allBeneficiaries.Count}");
             Console.WriteLine($"Selected province: {selectedProvince}, municipality: {selectedMunicipality}, status: {selectedStatus}");
 
@@ -1044,6 +1057,9 @@ namespace NCSC
                 Console.WriteLine("No status filter applied (showing all records)");
             }
 
+            // Note: Search filtering is now handled separately in FilterVisibleTableRows()
+            // to filter only the visible table rows dynamically
+
             int addedCount = 0;
             foreach (var entry in filtered)
             {
@@ -1076,6 +1092,10 @@ namespace NCSC
             }
             // Apply deceased highlighting after populating rows
             ApplyDeceasedRowHighlighting();
+            
+            // Apply search filter if there's text in the search bar
+            FilterVisibleTableRows();
+            
             Console.WriteLine($"Added {addedCount} records to the table");
         }
 
@@ -1401,6 +1421,94 @@ namespace NCSC
         private void beneficiaries_table_filter_SelectedIndexChanged(object sender, EventArgs e)
         {
             ApplyBeneficiaryFilters();
+        }
+
+        private void search_bar_beneficiaries_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                Console.WriteLine("search_bar_beneficiaries_TextChanged event fired!");
+                FilterVisibleTableRows();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in search_bar_beneficiaries_TextChanged: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                MessageBox.Show($"Search error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void FilterVisibleTableRows()
+        {
+            if (search_bar_beneficiaries == null)
+            {
+                Console.WriteLine("search_bar_beneficiaries is null!");
+                return;
+            }
+
+            if (beneficiaries_table == null)
+            {
+                Console.WriteLine("beneficiaries_table is null!");
+                return;
+            }
+
+            string searchText = search_bar_beneficiaries.Text?.Trim() ?? "";
+            Console.WriteLine($"FilterVisibleTableRows called with search text: '{searchText}'");
+            Console.WriteLine($"Total rows in table: {beneficiaries_table.Rows.Count}");
+
+            string searchLower = string.IsNullOrWhiteSpace(searchText) ? "" : searchText.ToLower();
+
+            // If search is empty, show all rows
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                int visibleCount = 0;
+                foreach (DataGridViewRow row in beneficiaries_table.Rows)
+                {
+                    if (!row.IsNewRow)
+                    {
+                        row.Visible = true;
+                        visibleCount++;
+                    }
+                }
+                Console.WriteLine($"Showing all {visibleCount} rows");
+                return;
+            }
+
+            // Filter rows based on visible columns
+            int matchedCount = 0;
+            int totalRows = 0;
+            foreach (DataGridViewRow row in beneficiaries_table.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
+
+                totalRows++;
+                bool matchesSearch = false;
+
+                // Search in all visible columns
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    if (cell.Value != null)
+                    {
+                        string cellValue = cell.Value.ToString().ToLower();
+                        if (cellValue.Contains(searchLower))
+                        {
+                            matchesSearch = true;
+                            break;
+                        }
+                    }
+                }
+
+                row.Visible = matchesSearch;
+                if (matchesSearch)
+                    matchedCount++;
+            }
+            
+            Console.WriteLine($"Filtered {totalRows} rows: {matchedCount} visible, {totalRows - matchedCount} hidden");
+            
+            // Force refresh of the DataGridView to ensure visibility changes are applied
+            beneficiaries_table.Refresh();
+            beneficiaries_table.Invalidate();
         }
 
         // Historical Report Filters
