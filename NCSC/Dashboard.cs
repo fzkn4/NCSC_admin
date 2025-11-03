@@ -61,6 +61,7 @@ namespace NCSC
             beneficiaries_province_filter.SelectedIndexChanged += beneficiaries_province_filter_SelectedIndexChanged;
             beneficiaries_municipality_filter.SelectedIndexChanged += beneficiaries_municipality_filter_SelectedIndexChanged;
             beneficiaries_table_filter.SelectedIndexChanged += beneficiaries_table_filter_SelectedIndexChanged;
+            summary_filter.SelectedIndexChanged += summary_filter_SelectedIndexChanged;
 
             // Set up message button event handlers
             msg_mailing_list_button.Click += msg_mailing_list_button_Click;
@@ -135,6 +136,12 @@ namespace NCSC
                 // Handle any errors silently to avoid disrupting the dashboard load
                 Console.WriteLine($"Error adding sample beneficiary: {ex.Message}");
             }
+
+            // Initialize summary filter dropdown with years from date_validated
+            InitializeSummaryFilter();
+            
+            // Update summary graph with filtered data
+            UpdateSummaryGraphByYear();
 
             UpdateBeneficiaryCounts();
             UpdateBirthdaySummaryGraph();
@@ -249,51 +256,189 @@ namespace NCSC
 
         private void randomizer()
         {
-            // Only one dataset is used for birthday distribution
-            GunaLineDataset birthdayDataset = new GunaLineDataset
+            UpdateSummaryGraphByYear();
+        }
+
+        // Update summary graph based on selected year from summary_filter dropdown
+        private void UpdateSummaryGraphByYear()
+        {
+            // Get selected year from dropdown
+            string selectedYearStr = summary_filter.SelectedItem?.ToString();
+            
+            // If no year selected or "All" selected, include all years
+            int? selectedYear = null;
+            if (!string.IsNullOrEmpty(selectedYearStr) && selectedYearStr != "All")
             {
-                Label = "Birthdays per Month",
+                if (int.TryParse(selectedYearStr, out int year))
+                {
+                    selectedYear = year;
+                }
+            }
+
+            // Create dataset for birthdays per month, filtered by validation year
+            GunaLineDataset birthdaysValidatedDataset = new GunaLineDataset
+            {
+                Label = selectedYear.HasValue ? $"Birthdays validated in {selectedYear}" : "Birthdays per Month (All Years)",
                 BorderWidth = 3,
                 PointRadius = 4,
                 BorderColor = Color.FromArgb(134, 115, 243),
                 FillColor = Color.FromArgb(134, 115, 243)
             };
 
-            // Initialize month count dictionary
-            Dictionary<string, int> monthCounts = new Dictionary<string, int>();
-            string[] months = {
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    };
-
-            foreach (string month in months)
+            // Initialize month count dictionary - use month numbers (1-12)
+            Dictionary<int, int> monthCounts = new Dictionary<int, int>();
+            for (int i = 1; i <= 12; i++)
             {
-                monthCounts[month] = 0;
+                monthCounts[i] = 0;
             }
 
-            // Count how many birthdays per month from all beneficiaries (not just filtered table)
+            int processedCount = 0;
+            int skippedCount = 0;
+            int sampleCount = 0;
+
             foreach (var beneficiary in allBeneficiaries)
             {
+                if (string.IsNullOrEmpty(beneficiary.date_validated) || string.IsNullOrEmpty(beneficiary.birth_date))
+                {
+                    continue;
+                }
+
+                // Parse validation date (for filtering by year)
+                DateTime validationDate;
+                bool validationParsed = DateTime.TryParse(
+                    beneficiary.date_validated,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind,
+                    out validationDate
+                ) || DateTime.TryParse(beneficiary.date_validated, out validationDate);
+
+                if (!validationParsed)
+                {
+                    if (sampleCount < 3)
+                    {
+                        Console.WriteLine($"Failed to parse date_validated: '{beneficiary.date_validated}'");
+                        sampleCount++;
+                    }
+                    skippedCount++;
+                    continue;
+                }
+
+                // Filter by year if selected
+                if (selectedYear.HasValue && validationDate.Year != selectedYear.Value)
+                {
+                    continue;
+                }
+
+                // Parse birth date to get birth month
                 if (DateTime.TryParse(beneficiary.birth_date, out DateTime birthDate))
                 {
-                    string monthName = birthDate.ToString("MMMM");
-                    if (monthCounts.ContainsKey(monthName))
+                    int birthMonth = birthDate.Month;
+
+                    if (sampleCount < 5)
                     {
-                        monthCounts[monthName]++;
+                        Console.WriteLine($"Sample: Validated {validationDate:yyyy-MM-dd}, Birth {birthDate:yyyy-MM-dd}, BirthMonth {birthMonth}");
+                        sampleCount++;
                     }
+
+                    if (birthMonth >= 1 && birthMonth <= 12)
+                    {
+                        monthCounts[birthMonth]++;
+                        processedCount++;
+                    }
+                }
+                else
+                {
+                    skippedCount++;
                 }
             }
 
-            // Assign counts to dataset
-            foreach (var month in months)
+            // Month names (Jan-Dec)
+            string[] monthNames = new string[12];
+            for (int month = 1; month <= 12; month++)
             {
-                birthdayDataset.DataPoints.Add(month, monthCounts[month]);
+                monthNames[month - 1] = new DateTime(2000, month, 1).ToString("MMMM");
             }
 
-            // Optionally clear and add to chart (depends on your chart setup)
-            summaryGraph.Datasets.Clear(); // replace `gunaChart1` with your chart instance name
-            summaryGraph.Datasets.Add(birthdayDataset);
+            // Populate dataset
+            birthdaysValidatedDataset.DataPoints.Clear();
+            for (int i = 0; i < monthNames.Length; i++)
+            {
+                int monthNumber = i + 1;
+                int count = monthCounts.ContainsKey(monthNumber) ? monthCounts[monthNumber] : 0;
+                birthdaysValidatedDataset.DataPoints.Add(monthNames[i], count);
+            }
+
+            Console.WriteLine($"UpdateSummaryGraphByYear (Birth-month based) - Selected: {selectedYearStr}, Processed: {processedCount}, Skipped: {skippedCount}");
+
+            // Render chart
+            summaryGraph.Datasets.Clear();
+            summaryGraph.Datasets.Add(birthdaysValidatedDataset);
             summaryGraph.Update();
+        }
+
+        // Initialize summary_filter dropdown with years from date_validated
+        private void InitializeSummaryFilter()
+        {
+            try
+            {
+                summary_filter.Items.Clear();
+                
+                // Extract unique years from date_validated
+                var years = new HashSet<int>();
+                
+                foreach (var beneficiary in allBeneficiaries)
+                {
+                    if (beneficiary != null && !string.IsNullOrEmpty(beneficiary.date_validated))
+                    {
+                        if (DateTime.TryParse(beneficiary.date_validated, out DateTime validationDate))
+                        {
+                            int year = validationDate.Year;
+                            if (year > 0)
+                            {
+                                years.Add(year);
+                            }
+                        }
+                    }
+                }
+                
+                // Sort years descending (newest first)
+                var sortedYears = years.OrderByDescending(y => y).ToList();
+                
+                if (sortedYears.Count > 0)
+                {
+                    // Add "All" option first
+                    summary_filter.Items.Add("All");
+                    
+                    // Add years
+                    foreach (var year in sortedYears)
+                    {
+                        summary_filter.Items.Add(year.ToString());
+                    }
+                    
+                    // Set default selection to most recent year (index 1, since "All" is at 0)
+                    summary_filter.SelectedIndex = 1;
+                }
+                else
+                {
+                    // If no years found, just add "All"
+                    summary_filter.Items.Add("All");
+                    summary_filter.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing summary filter: {ex.Message}");
+                // Fallback: add "All" option
+                summary_filter.Items.Clear();
+                summary_filter.Items.Add("All");
+                summary_filter.SelectedIndex = 0;
+            }
+        }
+
+        // Event handler for summary_filter selection change
+        private void summary_filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateSummaryGraphByYear();
         }
 
 
