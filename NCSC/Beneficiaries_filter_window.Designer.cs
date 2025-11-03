@@ -361,6 +361,7 @@
             submit_button.Size = new Size(146, 39);
             submit_button.TabIndex = 87;
             submit_button.Text = "Filter";
+            submit_button.Click += submit_button_Click_1;
             // 
             // label8
             // 

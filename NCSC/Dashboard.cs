@@ -90,6 +90,9 @@ namespace NCSC
             // Set initial state for message buttons (default to mailing list)
             ToggleMessageButtons(msg_mailing_list_button);
 
+            // Initialize filter bubble visibility (hidden by default since filters start as defaults)
+            UpdateFilterBubbleVisibility();
+
             // Populate municipality filter with 'All' by default
             beneficiaries_municipality_filter.Items.Clear();
             beneficiaries_municipality_filter.Items.Add("All");
@@ -488,8 +491,13 @@ namespace NCSC
 
         private void beneficiaries_ultimate_filter_button_Click(object sender, EventArgs e)
         {
-            var filterWindow = new Beneficiaries_filter_window();
-            filterWindow.ShowDialog();
+            var filterWindow = new Beneficiaries_filter_window(advancedFilterCriteria);
+            if (filterWindow.ShowDialog() == DialogResult.OK)
+            {
+                advancedFilterCriteria = filterWindow.FilterCriteria;
+                ApplyBeneficiaryFilters();
+                UpdateFilterBubbleVisibility();
+            }
         }
 
         private void ToggleMessageButtons(Guna.UI2.WinForms.Guna2Button selectedButton)
@@ -914,6 +922,9 @@ namespace NCSC
         // Store all files for filtering
         private List<FileData> allFiles = new List<FileData>();
 
+        // Store advanced filter criteria from filter window
+        private FilterCriteria advancedFilterCriteria = FilterCriteria.GetDefault();
+
         private async Task LoadBeneficiariesFromFirebase()
         {
             beneficiaries_table.Rows.Clear();
@@ -979,6 +990,7 @@ namespace NCSC
 
             ApplyBeneficiaryFilters();
             UpdateBeneficiaryCounts();
+            UpdateFilterBubbleVisibility();
         }
 
         private void ApplyBeneficiaryFilters()
@@ -992,69 +1004,84 @@ namespace NCSC
 
             var filtered = allBeneficiaries.AsEnumerable();
 
-            // Filter by province
+            // Filter by province (from main filter dropdown)
             if (!string.IsNullOrEmpty(selectedProvince) && selectedProvince != "All" && provinceMunicipalities.ContainsKey(selectedProvince))
             {
                 filtered = filtered.Where(b => b.province == selectedProvince);
             }
 
-            // Filter by municipality
+            // Filter by municipality (from main filter dropdown)
             if (!string.IsNullOrEmpty(selectedMunicipality) && selectedMunicipality != "All" && selectedMunicipality != "Municipality")
             {
                 filtered = filtered.Where(b => b.municipality == selectedMunicipality);
             }
 
-            // Filter by status
+            // Filter by status (from main filter dropdown)
             if (!string.IsNullOrEmpty(selectedStatus) && selectedStatus != "All")
             {
                 Console.WriteLine($"Filtering by status: {selectedStatus}");
-                switch (selectedStatus)
-                {
-                    case "Total Endorse from LGUs":
-                        filtered = filtered.Where(b => b.TotalEndorseFromLGUs);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalEndorseFromLGUs");
-                        break;
-                    case "Assessed":
-                        filtered = filtered.Where(b => b.Assessed);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for Assessed");
-                        break;
-                    case "Total Validated":
-                        filtered = filtered.Where(b => b.TotalValidated);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalValidated");
-                        break;
-                    case "Total Endorsed to NCSC CO":
-                        filtered = filtered.Where(b => b.TotalEndorsedToNCSCO);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalEndorsedToNCSCO");
-                        break;
-                    case "Total Cleaned list from NCSC CO":
-                        filtered = filtered.Where(b => b.TotalCleanedListFromNCSCO);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for TotalCleanedListFromNCSCO");
-                        break;
-                    case "Scheduled payout":
-                        filtered = filtered.Where(b => b.ScheduledPayout);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for ScheduledPayout");
-                        break;
-                    case "No. of applicants received the Cash Gift":
-                        filtered = filtered.Where(b => b.NumberOfApplicantsReceivedCashGift);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for NumberOfApplicantsReceivedCashGift");
-                        break;
-                    case "Deceased":
-                        filtered = filtered.Where(b => b.Deceased);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for Deceased");
-                        break;
-                    case "Unpaid":
-                        filtered = filtered.Where(b => b.Unpaid);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for Unpaid");
-                        break;
-                    case "Paid":
-                        filtered = filtered.Where(b => b.Paid);
-                        Console.WriteLine($"Filtered to {filtered.Count()} records for Paid");
-                        break;
-                }
+                filtered = ApplyStatusFilter(filtered, selectedStatus);
             }
-            else
+
+            // Apply advanced filter criteria from filter window
+            if (advancedFilterCriteria != null && advancedFilterCriteria.IsActive())
             {
-                Console.WriteLine("No status filter applied (showing all records)");
+                // Filter by age range
+                if (advancedFilterCriteria.MinAge.HasValue)
+                {
+                    filtered = filtered.Where(b =>
+                    {
+                        if (int.TryParse(b.age, out int age))
+                            return age >= advancedFilterCriteria.MinAge.Value;
+                        return false;
+                    });
+                }
+
+                if (advancedFilterCriteria.MaxAge.HasValue)
+                {
+                    filtered = filtered.Where(b =>
+                    {
+                        if (int.TryParse(b.age, out int age))
+                            return age <= advancedFilterCriteria.MaxAge.Value;
+                        return false;
+                    });
+                }
+
+                // Filter by province (from advanced filter)
+                if (!string.IsNullOrEmpty(advancedFilterCriteria.Province) && advancedFilterCriteria.Province != "All Provinces")
+                {
+                    filtered = filtered.Where(b => string.Equals(b.province?.Trim(), advancedFilterCriteria.Province, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Filter by municipality (from advanced filter)
+                if (!string.IsNullOrEmpty(advancedFilterCriteria.Municipality) && advancedFilterCriteria.Municipality != "All Municipalities")
+                {
+                    filtered = filtered.Where(b => string.Equals(b.municipality?.Trim(), advancedFilterCriteria.Municipality, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Filter by status (from advanced filter)
+                if (!string.IsNullOrEmpty(advancedFilterCriteria.Status))
+                {
+                    filtered = ApplyStatusFilter(filtered, advancedFilterCriteria.Status);
+                }
+
+                // Filter by IP
+                if (advancedFilterCriteria.IsIP.HasValue && advancedFilterCriteria.IsIP.Value)
+                {
+                    filtered = filtered.Where(b => !string.IsNullOrEmpty(b.ip) && 
+                        (b.ip.Equals("Yes", StringComparison.OrdinalIgnoreCase) || 
+                         b.ip.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                         b.ip.Equals("1", StringComparison.OrdinalIgnoreCase)));
+                }
+
+                // Filter by PWD
+                if (advancedFilterCriteria.IsPWD.HasValue && advancedFilterCriteria.IsPWD.Value)
+                {
+                    filtered = filtered.Where(b => !string.IsNullOrEmpty(b.pwd) && 
+                        (b.pwd.Equals("Yes", StringComparison.OrdinalIgnoreCase) || 
+                         b.pwd.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                         b.pwd.Equals("1", StringComparison.OrdinalIgnoreCase)));
+                }
             }
 
             // Note: Search filtering is now handled separately in FilterVisibleTableRows()
@@ -1097,6 +1124,54 @@ namespace NCSC
             FilterVisibleTableRows();
             
             Console.WriteLine($"Added {addedCount} records to the table");
+        }
+
+        // Helper method to apply status filter
+        private IEnumerable<Beneficiary> ApplyStatusFilter(IEnumerable<Beneficiary> beneficiaries, string selectedStatus)
+        {
+            switch (selectedStatus)
+            {
+                case "Total Endorse from LGUs":
+                    return beneficiaries.Where(b => b.TotalEndorseFromLGUs);
+                case "Assessed":
+                    return beneficiaries.Where(b => b.Assessed);
+                case "Total Validated":
+                    return beneficiaries.Where(b => b.TotalValidated);
+                case "Total Endorsed to NCSC CO":
+                    return beneficiaries.Where(b => b.TotalEndorsedToNCSCO);
+                case "Total Cleaned list from NCSC CO":
+                    return beneficiaries.Where(b => b.TotalCleanedListFromNCSCO);
+                case "Scheduled payout":
+                    return beneficiaries.Where(b => b.ScheduledPayout);
+                case "No. of applicants received the Cash Gift":
+                case "No. of applicants recieved the Cash Gift": // Handle typo in dropdown
+                    return beneficiaries.Where(b => b.NumberOfApplicantsReceivedCashGift);
+                case "Deceased":
+                    return beneficiaries.Where(b => b.Deceased);
+                case "Unpaid":
+                    return beneficiaries.Where(b => b.Unpaid);
+                case "Paid":
+                    return beneficiaries.Where(b => b.Paid);
+                default:
+                    return beneficiaries;
+            }
+        }
+
+        // Update filter bubble visibility based on filter state
+        private void UpdateFilterBubbleVisibility()
+        {
+            if (beneficiary_filter_bubble != null)
+            {
+                beneficiary_filter_bubble.Visible = advancedFilterCriteria != null && advancedFilterCriteria.IsActive();
+            }
+        }
+
+        // Clear advanced filters (called when clear button is clicked in filter window)
+        public void ClearAdvancedFilters()
+        {
+            advancedFilterCriteria = FilterCriteria.GetDefault();
+            ApplyBeneficiaryFilters();
+            UpdateFilterBubbleVisibility();
         }
 
         // Highlight rows for deceased beneficiaries
