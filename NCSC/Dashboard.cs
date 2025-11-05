@@ -165,6 +165,7 @@ namespace NCSC
             UpdateMilestoneBirthdayChartByMonth();
             await LoadProvincialAccountsAsync();
             await LoadFilesFromFirebase();
+            await LoadLoginHistoryFromFirebase();
         }
 
         private void logoutButton_Click(object sender, EventArgs e)
@@ -221,7 +222,7 @@ namespace NCSC
             }
             else if (selectedButton == graphReportButton)
             {
-                await RefreshGraphReportData();
+                await LoadLoginHistoryFromFirebase();
             }
             else if (selectedButton == accounts_button)
             {
@@ -1347,6 +1348,52 @@ namespace NCSC
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading files from Firebase: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        private async Task LoadLoginHistoryFromFirebase()
+        {
+            try
+            {
+                login_history_table.Rows.Clear();
+
+                var loginHistory = await FirebaseHelper.GetDataAsync<Dictionary<string, LoginHistory>>("login_history");
+
+                if (loginHistory == null)
+                {
+                    Console.WriteLine("No login history data received from Firebase");
+                    return;
+                }
+
+                // Sort by timestamp (most recent first)
+                var sortedHistory = loginHistory
+                    .OrderByDescending(x => x.Value?.timestamp ?? 0)
+                    .ToList();
+
+                foreach (var entry in sortedHistory)
+                {
+                    if (entry.Value != null)
+                    {
+                        var history = entry.Value;
+                        string loginId = entry.Key;
+                        string formattedDate = history.GetFormattedDate();
+
+                        login_history_table.Rows.Add(
+                            loginId,
+                            history.username ?? "",
+                            history.municipality ?? "",
+                            history.province ?? "",
+                            formattedDate
+                        );
+                    }
+                }
+
+                Console.WriteLine($"Loaded {sortedHistory.Count} login history entries from Firebase");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading login history from Firebase: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
