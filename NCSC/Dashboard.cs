@@ -464,22 +464,6 @@ namespace NCSC
         // beneficiaries table
 
         // MESSAGE
-        private void msg_immediately_checkbox_CheckedChanged(object sender, EventArgs e)
-        {
-            if (msg_immediately_checkbox.Checked)
-            {
-                msg_start_at_checkbox.Checked = false;
-            }
-        }
-
-        private void msg_start_at_checkbox_CheckedChanged(object sender, EventArgs e)
-        {
-            if (msg_start_at_checkbox.Checked)
-            {
-                msg_immediately_checkbox.Checked = false;
-            }
-        }
-
         private void msg_mailing_list_button_Click(object sender, EventArgs e)
         {
             ToggleMessageButtons(msg_mailing_list_button);
