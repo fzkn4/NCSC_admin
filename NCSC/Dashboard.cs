@@ -12,6 +12,10 @@ using Guna.Charts.WinForms;
 using Guna.UI2.WinForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using OfficeOpenXml;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.IO;
+using PdfFont = iTextSharp.text.Font;
 
 namespace NCSC
 {
@@ -80,6 +84,9 @@ namespace NCSC
             // Set up message button event handlers
             msg_mailing_list_button.Click += msg_mailing_list_button_Click;
             msg_message_button.Click += msg_message_button_Click;
+
+            // Set up PDF export button event handler
+            generate_pdf_button.Click += generate_pdf_button_Click;
 
             // Initialize historical report filters
             InitializeHistoricalReportFilters();
@@ -3049,6 +3056,171 @@ namespace NCSC
             {
                 throw new Exception($"Error uploading to Firebase: {ex.Message}");
             }
+        }
+
+        // PDF Export functionality
+        private void generate_pdf_button_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Get visible rows from the table (respects filters)
+                var visibleRows = new List<DataGridViewRow>();
+                foreach (DataGridViewRow row in beneficiaries_table.Rows)
+                {
+                    if (!row.IsNewRow && row.Visible)
+                    {
+                        visibleRows.Add(row);
+                    }
+                }
+
+                if (visibleRows.Count == 0)
+                {
+                    MessageBox.Show("No data to export. Please ensure there are visible beneficiaries in the table.", 
+                        "No Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Show SaveFileDialog to let user choose where to save
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "PDF Files|*.pdf|All Files|*.*";
+                    saveFileDialog.FilterIndex = 1;
+                    saveFileDialog.DefaultExt = "pdf";
+                    saveFileDialog.FileName = $"Beneficiaries_Export_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                    saveFileDialog.Title = "Save PDF Export";
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        ExportToPDF(visibleRows, saveFileDialog.FileName);
+                        MessageBox.Show($"PDF exported successfully!\n\nFile: {saveFileDialog.FileName}\nRecords: {visibleRows.Count}", 
+                            "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to PDF: {ex.Message}", "Export Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine($"PDF Export Error: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        private void ExportToPDF(List<DataGridViewRow> rows, string filePath)
+        {
+            // Create document with page size and margins
+            Document document = new Document(PageSize.A4.Rotate(), 10f, 10f, 10f, 10f);
+            
+            try
+            {
+                // Create PDF writer
+                PdfWriter writer = PdfWriter.GetInstance(document, new FileStream(filePath, FileMode.Create));
+                document.Open();
+
+                // Set up fonts
+                BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                PdfFont headerFont = new PdfFont(baseFont, 12, PdfFont.BOLD);
+                PdfFont cellFont = new PdfFont(baseFont, 8, PdfFont.NORMAL);
+
+                // Add title
+                Paragraph title = new Paragraph("Beneficiaries Report", new PdfFont(baseFont, 16, PdfFont.BOLD));
+                title.Alignment = Element.ALIGN_CENTER;
+                title.SpacingAfter = 10f;
+                document.Add(title);
+
+                // Add export date
+                Paragraph dateInfo = new Paragraph($"Exported on: {DateTime.Now:MMMM dd, yyyy hh:mm tt}", 
+                    new PdfFont(baseFont, 10, PdfFont.ITALIC));
+                dateInfo.Alignment = Element.ALIGN_CENTER;
+                dateInfo.SpacingAfter = 10f;
+                document.Add(dateInfo);
+
+                // Add total count
+                Paragraph countInfo = new Paragraph($"Total Records: {rows.Count}", 
+                    new PdfFont(baseFont, 10, PdfFont.NORMAL));
+                countInfo.Alignment = Element.ALIGN_CENTER;
+                countInfo.SpacingAfter = 15f;
+                document.Add(countInfo);
+
+                // Get visible columns (exclude hidden firebase_key_col)
+                var visibleColumns = new List<DataGridViewColumn>();
+                foreach (DataGridViewColumn column in beneficiaries_table.Columns)
+                {
+                    if (column.Visible && column.Name != "firebase_key_col")
+                    {
+                        visibleColumns.Add(column);
+                    }
+                }
+
+                // Create table with number of visible columns
+                PdfPTable table = new PdfPTable(visibleColumns.Count);
+                table.WidthPercentage = 100;
+                table.SetWidths(GetColumnWidths(visibleColumns.Count));
+
+                // Add header row
+                foreach (DataGridViewColumn column in visibleColumns)
+                {
+                    PdfPCell headerCell = new PdfPCell(new Phrase(column.HeaderText ?? column.Name, headerFont));
+                    headerCell.BackgroundColor = new BaseColor(134, 115, 243); // Match table header color
+                    headerCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                    headerCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                    headerCell.Padding = 5f;
+                    table.AddCell(headerCell);
+                }
+                table.HeaderRows = 1;
+
+                // Add data rows
+                foreach (DataGridViewRow row in rows)
+                {
+                    foreach (DataGridViewColumn column in visibleColumns)
+                    {
+                        var cellValue = row.Cells[column.Name]?.Value?.ToString() ?? "";
+                        
+                        // Handle special formatting for deceased rows (if needed)
+                        PdfPCell cell = new PdfPCell(new Phrase(cellValue, cellFont));
+                        cell.HorizontalAlignment = Element.ALIGN_LEFT;
+                        cell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                        cell.Padding = 4f;
+                        
+                        // Apply background color if row is deceased
+                        if (column.Name == "deceased_status" && cellValue.Equals("Deceased", StringComparison.OrdinalIgnoreCase))
+                        {
+                            cell.BackgroundColor = new BaseColor(224, 107, 128); // Light red/pink for deceased
+                        }
+                        else if (row.DefaultCellStyle.BackColor != Color.Empty && 
+                                 row.DefaultCellStyle.BackColor != Color.White)
+                        {
+                            // Apply row background color if set
+                            Color rowColor = row.DefaultCellStyle.BackColor;
+                            cell.BackgroundColor = new BaseColor(rowColor.R, rowColor.G, rowColor.B);
+                        }
+                        
+                        table.AddCell(cell);
+                    }
+                }
+
+                document.Add(table);
+            }
+            finally
+            {
+                document.Close();
+            }
+        }
+
+        private float[] GetColumnWidths(int columnCount)
+        {
+            // Define relative column widths based on typical data sizes
+            // iTextSharp expects relative widths (not percentages)
+            // The table will automatically normalize these values
+            float[] widths = new float[columnCount];
+
+            // Set relative widths (equal width by default)
+            // You can adjust these values to make certain columns wider or narrower
+            for (int i = 0; i < columnCount; i++)
+            {
+                widths[i] = 1f; // Equal width by default
+            }
+
+            return widths;
         }
     }
 }
