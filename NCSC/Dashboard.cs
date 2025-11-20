@@ -903,6 +903,9 @@ namespace NCSC
 
         // Store all beneficiaries for filtering
         private List<Beneficiary> allBeneficiaries = new List<Beneficiary>();
+        
+        // Store mapping of beneficiary to Firebase key for direct updates
+        private Dictionary<Beneficiary, string> beneficiaryToFirebaseKey = new Dictionary<Beneficiary, string>();
 
         // Store all files for filtering
         private List<FileData> allFiles = new List<FileData>();
@@ -929,6 +932,10 @@ namespace NCSC
             beneficiaries_table.Columns.Add("ip_col", "IP");
             beneficiaries_table.Columns.Add("paid_status", "Paid Status");
             beneficiaries_table.Columns.Add("deceased_status", "Deceased Status");
+            
+            // Add hidden column for Firebase key (for direct updates)
+            beneficiaries_table.Columns.Add("firebase_key_col", "Firebase Key");
+            beneficiaries_table.Columns["firebase_key_col"].Visible = false;
 
             try
             {
@@ -939,11 +946,15 @@ namespace NCSC
                 var beneficiaries = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
 
                 allBeneficiaries.Clear();
+                beneficiaryToFirebaseKey.Clear();
                 if (beneficiaries != null)
                 {
                     Console.WriteLine($"Loaded {beneficiaries.Count} beneficiaries from Firebase");
-                    foreach (var entry in beneficiaries.Values)
+                    foreach (var kvp in beneficiaries)
                     {
+                        var entry = kvp.Value;
+                        var firebaseKey = kvp.Key;
+                        
                         if (entry != null)
                         {
                             // Ensure boolean fields are properly initialized
@@ -955,6 +966,7 @@ namespace NCSC
                             }
 
                             allBeneficiaries.Add(entry);
+                            beneficiaryToFirebaseKey[entry] = firebaseKey;
                             Console.WriteLine($"Added beneficiary: {entry.batch_code} - {entry.name ?? "No name"} - TotalEndorseFromLGUs: {entry.TotalEndorseFromLGUs}");
                             Console.WriteLine($"  Sex: '{entry.sex}' -> Normalized: '{entry.GetNormalizedSex()}'");
                             Console.WriteLine($"  Birth Date: '{entry.birth_date}' -> Normalized: '{entry.GetNormalizedBirthDate()}'");
@@ -1085,6 +1097,11 @@ namespace NCSC
                 // Determine deceased status based on Deceased boolean attribute
                 string deceasedStatus = entry.Deceased ? "Deceased" : "Alive";
 
+                // Get Firebase key for this beneficiary
+                string firebaseKey = beneficiaryToFirebaseKey.ContainsKey(entry) 
+                    ? beneficiaryToFirebaseKey[entry] 
+                    : "";
+
                 beneficiaries_table.Rows.Add(
                     entry.batch_code,
                     entry.age,
@@ -1098,7 +1115,8 @@ namespace NCSC
                     entry.pwd,
                     entry.ip,
                     paidStatus,
-                    deceasedStatus
+                    deceasedStatus,
+                    firebaseKey
                 );
                 addedCount++;
             }
@@ -2034,123 +2052,94 @@ namespace NCSC
 
             try
             {
-                // Build a set of selected batch codes (trimmed to handle whitespace issues)
-                var selectedBatchCodes = new List<string>();
+                // Build list of selected rows with their Firebase keys and batch codes
+                var selectedRows = new List<(DataGridViewRow row, string firebaseKey, string batchCode)>();
                 foreach (DataGridViewRow row in beneficiaries_table.SelectedRows)
                 {
                     if (row.IsNewRow) continue;
-                    var code = row.Cells["batch_code_col"].Value?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(code)) selectedBatchCodes.Add(code);
-                }
-
-                if (selectedBatchCodes.Count == 0)
-                {
-                    MessageBox.Show("Invalid selection.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Fetch all beneficiaries once to map batch_code -> key
-                var allBeneficiariesFromFirebase = await FirebaseHelper.GetDataAsync<Dictionary<string, Beneficiary>>("beneficiaries");
-                if (allBeneficiariesFromFirebase == null)
-                {
-                    MessageBox.Show("No beneficiaries found in storage.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Create mapping with trimmed batch codes to handle whitespace issues
-                var batchCodeToKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                var batchCodeToBeneficiary = new Dictionary<string, Beneficiary>(StringComparer.OrdinalIgnoreCase);
-                
-                foreach (var entry in allBeneficiariesFromFirebase)
-                {
-                    var val = entry.Value;
-                    if (val == null) continue;
                     
-                    var trimmedBatchCode = val.batch_code?.Trim();
-                    if (!string.IsNullOrEmpty(trimmedBatchCode))
+                    var firebaseKey = row.Cells["firebase_key_col"]?.Value?.ToString()?.Trim();
+                    var batchCode = row.Cells["batch_code_col"]?.Value?.ToString()?.Trim();
+                    
+                    if (!string.IsNullOrEmpty(firebaseKey))
                     {
-                        // If duplicate batch code exists, log it but use the first one found
-                        if (!batchCodeToKey.ContainsKey(trimmedBatchCode))
-                        {
-                            batchCodeToKey[trimmedBatchCode] = entry.Key;
-                            batchCodeToBeneficiary[trimmedBatchCode] = val;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Warning: Duplicate batch code found: {trimmedBatchCode}");
-                        }
+                        selectedRows.Add((row, firebaseKey, batchCode ?? ""));
                     }
+                    else
+                    {
+                        Console.WriteLine($"Warning: Row with batch code '{batchCode}' has no Firebase key. This row may not be updatable.");
+                    }
+                }
+
+                if (selectedRows.Count == 0)
+                {
+                    MessageBox.Show("No valid beneficiaries selected. Please ensure the selected rows have valid data.", "Invalid Selection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
 
                 int updatedCount = 0;
                 var failedBatchCodes = new List<string>();
                 var failureReasons = new List<string>();
 
-                foreach (var code in selectedBatchCodes)
+                // Update each selected beneficiary directly using its Firebase key
+                foreach (var (row, firebaseKey, batchCode) in selectedRows)
                 {
-                    // Try to find the batch code in Firebase (case-insensitive, trimmed)
-                    if (!batchCodeToKey.TryGetValue(code, out var key))
-                    {
-                        failedBatchCodes.Add(code);
-                        failureReasons.Add("Batch code not found in Firebase");
-                        Console.WriteLine($"Failed to find batch code '{code}' in Firebase.");
-                        continue;
-                    }
-
-                    // Get beneficiary directly from Firebase data instead of local filtered list
-                    if (!batchCodeToBeneficiary.TryGetValue(code, out var beneficiary))
-                    {
-                        failedBatchCodes.Add(code);
-                        failureReasons.Add("Beneficiary data not found");
-                        Console.WriteLine($"Failed to find beneficiary data for batch code '{code}'.");
-                        continue;
-                    }
-
-                    // Update field on model
-                    switch (statusField)
-                    {
-                        case "TotalEndorseFromLGUs":
-                            beneficiary.TotalEndorseFromLGUs = true;
-                            break;
-                        case "Assessed":
-                            beneficiary.Assessed = true;
-                            break;
-                        case "TotalValidated":
-                            beneficiary.TotalValidated = true;
-                            break;
-                        case "TotalEndorsedToNCSCO":
-                            beneficiary.TotalEndorsedToNCSCO = true;
-                            break;
-                        case "TotalCleanedListFromNCSCO":
-                            beneficiary.TotalCleanedListFromNCSCO = true;
-                            break;
-                        case "ScheduledPayout":
-                            beneficiary.ScheduledPayout = true;
-                            break;
-                        case "NumberOfApplicantsReceivedCashGift":
-                            beneficiary.NumberOfApplicantsReceivedCashGift = true;
-                            break;
-                        case "Deceased":
-                            beneficiary.Deceased = true;
-                            break;
-                        case "Unpaid":
-                            beneficiary.Unpaid = true;
-                            break;
-                        case "Paid":
-                            beneficiary.Paid = true;
-                            break;
-                        default:
-                            MessageBox.Show("Invalid status field.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                    }
-
                     try
                     {
-                        // Persist to storage
-                        await FirebaseHelper.SetDataAsync($"beneficiaries/{key}", beneficiary);
+                        // Fetch the beneficiary from Firebase using the key
+                        var beneficiary = await FirebaseHelper.GetDataAsync<Beneficiary>($"beneficiaries/{firebaseKey}");
                         
-                        // Update local list if it exists there
-                        var localBeneficiary = allBeneficiaries.FirstOrDefault(b => b.batch_code?.Trim() == code);
+                        if (beneficiary == null)
+                        {
+                            failedBatchCodes.Add(batchCode);
+                            failureReasons.Add("Beneficiary not found in Firebase");
+                            Console.WriteLine($"Failed to fetch beneficiary with key '{firebaseKey}' from Firebase.");
+                            continue;
+                        }
+
+                        // Update field on model
+                        switch (statusField)
+                        {
+                            case "TotalEndorseFromLGUs":
+                                beneficiary.TotalEndorseFromLGUs = true;
+                                break;
+                            case "Assessed":
+                                beneficiary.Assessed = true;
+                                break;
+                            case "TotalValidated":
+                                beneficiary.TotalValidated = true;
+                                break;
+                            case "TotalEndorsedToNCSCO":
+                                beneficiary.TotalEndorsedToNCSCO = true;
+                                break;
+                            case "TotalCleanedListFromNCSCO":
+                                beneficiary.TotalCleanedListFromNCSCO = true;
+                                break;
+                            case "ScheduledPayout":
+                                beneficiary.ScheduledPayout = true;
+                                break;
+                            case "NumberOfApplicantsReceivedCashGift":
+                                beneficiary.NumberOfApplicantsReceivedCashGift = true;
+                                break;
+                            case "Deceased":
+                                beneficiary.Deceased = true;
+                                break;
+                            case "Unpaid":
+                                beneficiary.Unpaid = true;
+                                break;
+                            case "Paid":
+                                beneficiary.Paid = true;
+                                break;
+                            default:
+                                MessageBox.Show("Invalid status field.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                        }
+
+                        // Persist to storage using the Firebase key
+                        await FirebaseHelper.SetDataAsync($"beneficiaries/{firebaseKey}", beneficiary);
+                        
+                        // Update local list if it exists there (find by Firebase key mapping)
+                        var localBeneficiary = beneficiaryToFirebaseKey.FirstOrDefault(kvp => kvp.Value == firebaseKey).Key;
                         if (localBeneficiary != null)
                         {
                             // Sync the updated field to local list
@@ -2193,9 +2182,9 @@ namespace NCSC
                     }
                     catch (Exception ex)
                     {
-                        failedBatchCodes.Add(code);
+                        failedBatchCodes.Add(batchCode);
                         failureReasons.Add($"Firebase update error: {ex.Message}");
-                        Console.WriteLine($"Error updating batch code '{code}' to Firebase: {ex.Message}");
+                        Console.WriteLine($"Error updating beneficiary with key '{firebaseKey}' (batch code '{batchCode}') to Firebase: {ex.Message}");
                     }
                 }
 
