@@ -16,6 +16,8 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
 using PdfFont = iTextSharp.text.Font;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 namespace NCSC
 {
@@ -84,6 +86,19 @@ namespace NCSC
             // Set up message button event handlers
             msg_mailing_list_button.Click += msg_mailing_list_button_Click;
             msg_message_button.Click += msg_message_button_Click;
+
+            // Initialize email config
+            EmailConfig.InitializeConfig();
+
+            // Set up email sending button event handler
+            send_email_button.Click += send_email_button_Click;
+
+            // Make email textboxes editable
+            from_email_textbox.ReadOnly = false;
+            subject_email_textbox.ReadOnly = false;
+
+            // Initialize email province and municipality dropdowns
+            InitializeEmailDropdowns();
 
             // Set up PDF export button event handler
             generate_pdf_button.Click += generate_pdf_button_Click;
@@ -3221,6 +3236,384 @@ namespace NCSC
             }
 
             return widths;
+        }
+
+        // Initialize email province and municipality dropdowns
+        private void InitializeEmailDropdowns()
+        {
+            // Find the dropdown controls (they should be added in Designer)
+            var emailProvinceDropdown = this.Controls.Find("email_province_dropdownbox", true).FirstOrDefault() as Guna.UI2.WinForms.Guna2ComboBox;
+            var emailMunicipalityDropdown = this.Controls.Find("email_municipality_dropdownbox", true).FirstOrDefault() as Guna.UI2.WinForms.Guna2ComboBox;
+
+            if (emailProvinceDropdown != null)
+            {
+                // Populate province dropdown
+                emailProvinceDropdown.Items.Clear();
+                emailProvinceDropdown.Items.Add("All");
+                foreach (var province in provinceMunicipalities.Keys)
+                {
+                    emailProvinceDropdown.Items.Add(province);
+                }
+                emailProvinceDropdown.SelectedIndex = 0;
+
+                // Set up event handler for province change
+                emailProvinceDropdown.SelectedIndexChanged += EmailProvinceDropdown_SelectedIndexChanged;
+            }
+
+            if (emailMunicipalityDropdown != null)
+            {
+                // Populate municipality dropdown with 'All' by default
+                emailMunicipalityDropdown.Items.Clear();
+                emailMunicipalityDropdown.Items.Add("All");
+                emailMunicipalityDropdown.SelectedIndex = 0;
+            }
+        }
+
+        private void EmailProvinceDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var emailProvinceDropdown = sender as Guna.UI2.WinForms.Guna2ComboBox;
+            var emailMunicipalityDropdown = this.Controls.Find("email_municipality_dropdownbox", true).FirstOrDefault() as Guna.UI2.WinForms.Guna2ComboBox;
+
+            if (emailMunicipalityDropdown == null || emailProvinceDropdown == null) return;
+
+            emailMunicipalityDropdown.Items.Clear();
+            string selectedProvince = emailProvinceDropdown.SelectedItem?.ToString();
+            
+            if (!string.IsNullOrEmpty(selectedProvince) && provinceMunicipalities.ContainsKey(selectedProvince))
+            {
+                // For Zamboanga City and Isabela City, only show the city
+                if (selectedProvince == "Zamboanga City" || selectedProvince == "Isabela City")
+                {
+                    emailMunicipalityDropdown.Items.Add(provinceMunicipalities[selectedProvince][0]);
+                    emailMunicipalityDropdown.SelectedIndex = 0;
+                }
+                else
+                {
+                    emailMunicipalityDropdown.Items.Add("All");
+                    emailMunicipalityDropdown.Items.AddRange(provinceMunicipalities[selectedProvince].ToArray());
+                    emailMunicipalityDropdown.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                // If 'All' or invalid, show 'All' only
+                emailMunicipalityDropdown.Items.Add("All");
+                emailMunicipalityDropdown.SelectedIndex = 0;
+            }
+        }
+
+        // Email sending functionality
+        private async void send_email_button_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Get dropdown controls
+                var emailProvinceDropdown = this.Controls.Find("email_province_dropdownbox", true).FirstOrDefault() as Guna.UI2.WinForms.Guna2ComboBox;
+                var emailMunicipalityDropdown = this.Controls.Find("email_municipality_dropdownbox", true).FirstOrDefault() as Guna.UI2.WinForms.Guna2ComboBox;
+
+                if (emailProvinceDropdown == null || emailMunicipalityDropdown == null)
+                {
+                    MessageBox.Show("Email dropdown controls not found. Please ensure they are properly initialized.", 
+                        "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Validate inputs
+                string fromEmail = from_email_textbox.Text?.Trim() ?? "";
+                string selectedProvince = emailProvinceDropdown.SelectedItem?.ToString() ?? "";
+                string selectedMunicipality = emailMunicipalityDropdown.SelectedItem?.ToString() ?? "";
+                string messageBody = subject_email_textbox.Text?.Trim() ?? "";
+
+                if (string.IsNullOrEmpty(fromEmail))
+                {
+                    MessageBox.Show("Please enter a 'From' email address.", "Validation Error", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(selectedProvince) || selectedProvince == "All")
+                {
+                    MessageBox.Show("Please select a province.", "Validation Error", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(selectedMunicipality) || selectedMunicipality == "All")
+                {
+                    MessageBox.Show("Please select a municipality.", "Validation Error", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(messageBody))
+                {
+                    MessageBox.Show("Please enter a message.", "Validation Error", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Get Gmail credentials from config
+                string gmailAddress = EmailConfig.GetGmailAddress();
+                string appPassword = EmailConfig.GetAppPassword();
+
+                if (string.IsNullOrEmpty(gmailAddress) || string.IsNullOrEmpty(appPassword))
+                {
+                    MessageBox.Show("Gmail credentials not configured. Please check the email configuration.", 
+                        "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Disable button during sending
+                send_email_button.Enabled = false;
+                send_email_button.Text = "Sending...";
+
+                try
+                {
+                    // Get recipient emails from provincial_accounts based on province and municipality
+                    var recipientEmails = await GetRecipientEmailsAsync(selectedProvince, selectedMunicipality);
+
+                    if (recipientEmails.Count == 0)
+                    {
+                        MessageBox.Show($"No email addresses found for {selectedProvince} - {selectedMunicipality}.\n\n" +
+                            "Please ensure that provincial accounts have email addresses configured and are approved.", 
+                            "No Recipients", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // Send email to all recipients asynchronously
+                    await Task.Run(() => SendEmailToMultipleRecipients(gmailAddress, appPassword, fromEmail, recipientEmails, messageBody));
+                    
+                    MessageBox.Show($"Email sent successfully to {recipientEmails.Count} recipient(s)!", "Success", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                    // Clear the message body after successful send (optional)
+                    // subject_email_textbox.Text = "";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error sending email: {ex.Message}\n\nPlease ensure:\n" +
+                        "1. Gmail credentials are correct in the configuration\n" +
+                        "2. You have a stable internet connection\n" +
+                        "3. The Gmail account has 2-Step Verification enabled", 
+                        "Email Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine($"Email sending error: {ex.Message}\n{ex.StackTrace}");
+                }
+                finally
+                {
+                    // Re-enable button
+                    send_email_button.Enabled = true;
+                    send_email_button.Text = "Send Message";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unexpected error: {ex.Message}", "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine($"Unexpected error in send_email_button_Click: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        private async Task<List<string>> GetRecipientEmailsAsync(string province, string municipality)
+        {
+            var recipientEmails = new List<string>();
+
+            try
+            {
+                // Get all provincial accounts from Firebase
+                var accounts = await FirebaseHelper.GetDataAsync<Dictionary<string, ProvincialAccounts>>("provincial_accounts");
+
+                if (accounts == null)
+                {
+                    return recipientEmails;
+                }
+
+                // Filter accounts by province and municipality, and get their email addresses
+                foreach (var account in accounts.Values)
+                {
+                    if (account != null && 
+                        account.status == "approved" &&
+                        string.Equals(account.province?.Trim(), province, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(account.municipality?.Trim(), municipality, StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrEmpty(account.email))
+                    {
+                        string email = account.email.Trim();
+                        if (IsValidEmail(email) && !recipientEmails.Contains(email, StringComparer.OrdinalIgnoreCase))
+                        {
+                            recipientEmails.Add(email);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting recipient emails: {ex.Message}");
+                throw;
+            }
+
+            return recipientEmails;
+        }
+
+        private void SendEmailToMultipleRecipients(string gmailAddress, string appPassword, string fromEmail, List<string> recipientEmails, string messageBody)
+        {
+            if (recipientEmails == null || recipientEmails.Count == 0)
+            {
+                throw new Exception("No recipient emails provided.");
+            }
+
+            using (var smtp = new SmtpClient())
+            {
+                // Connect to Gmail SMTP server
+                smtp.Connect("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                
+                // Authenticate using Gmail address and app password
+                smtp.Authenticate(gmailAddress, appPassword);
+
+                // Send email to each recipient
+                foreach (var recipientEmail in recipientEmails)
+                {
+                    try
+                    {
+                        var email = new MimeMessage();
+                        
+                        // Set From address (use the fromEmail textbox value as display name, gmailAddress as actual sender)
+                        email.From.Add(new MailboxAddress(fromEmail, gmailAddress));
+                        
+                        // Set To address
+                        email.To.Add(new MailboxAddress("", recipientEmail));
+                        
+                        // Set subject
+                        email.Subject = "NCSC Message";
+                        
+                        // Set body
+                        email.Body = new TextPart(MimeKit.Text.TextFormat.Text)
+                        {
+                            Text = messageBody
+                        };
+
+                        // Send the email
+                        smtp.Send(email);
+                        Console.WriteLine($"Email sent successfully to: {recipientEmail}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error sending email to {recipientEmail}: {ex.Message}");
+                        // Continue with other recipients even if one fails
+                    }
+                }
+                
+                // Disconnect
+                smtp.Disconnect(true);
+            }
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+
+    // Simple dialog for Gmail credentials
+    public class EmailCredentialDialog : Form
+    {
+        private TextBox gmailTextBox;
+        private TextBox passwordTextBox;
+        private Button okButton;
+        private Button cancelButton;
+
+        public string GmailAddress => gmailTextBox.Text.Trim();
+        public string AppPassword => passwordTextBox.Text.Trim();
+
+        public EmailCredentialDialog()
+        {
+            this.Text = "Gmail Credentials";
+            this.Size = new Size(400, 180);
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.StartPosition = FormStartPosition.CenterParent;
+
+            // Gmail label and textbox
+            Label gmailLabel = new Label
+            {
+                Text = "Gmail Address:",
+                Location = new Point(12, 15),
+                Size = new Size(100, 20),
+                AutoSize = true
+            };
+            this.Controls.Add(gmailLabel);
+
+            gmailTextBox = new TextBox
+            {
+                Location = new Point(12, 35),
+                Size = new Size(360, 20),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            this.Controls.Add(gmailTextBox);
+
+            // App Password label and textbox
+            Label passwordLabel = new Label
+            {
+                Text = "App Password:",
+                Location = new Point(12, 65),
+                Size = new Size(100, 20),
+                AutoSize = true
+            };
+            this.Controls.Add(passwordLabel);
+
+            passwordTextBox = new TextBox
+            {
+                Location = new Point(12, 85),
+                Size = new Size(360, 20),
+                UseSystemPasswordChar = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            this.Controls.Add(passwordTextBox);
+
+            // OK button
+            okButton = new Button
+            {
+                Text = "OK",
+                DialogResult = DialogResult.OK,
+                Location = new Point(216, 115),
+                Size = new Size(75, 23),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+            };
+            this.Controls.Add(okButton);
+            this.AcceptButton = okButton;
+
+            // Cancel button
+            cancelButton = new Button
+            {
+                Text = "Cancel",
+                DialogResult = DialogResult.Cancel,
+                Location = new Point(297, 115),
+                Size = new Size(75, 23),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+            };
+            this.Controls.Add(cancelButton);
+            this.CancelButton = cancelButton;
+
+            // Info label
+            Label infoLabel = new Label
+            {
+                Text = "Note: Use Gmail App Password, not your regular password.",
+                Location = new Point(12, 115),
+                Size = new Size(200, 30),
+                ForeColor = Color.Gray,
+                Font = new System.Drawing.Font("Microsoft Sans Serif", 7F)
+            };
+            this.Controls.Add(infoLabel);
         }
     }
 }

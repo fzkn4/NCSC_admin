@@ -13,5 +13,6 @@ namespace NCSC
         public string province { get; set; }
         public string municipality { get; set; }
         public string status { get; set; }
+        public string email { get; set; }
     }
 }
